@@ -1,0 +1,812 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#7cc8ff">
+<title>Mi Pueblito</title>
+<style>
+  :root { --fg: #1f2937; }
+  * { box-sizing: border-box; margin: 0; }
+  html, body { height: 100%; overflow: hidden; font-family: system-ui, sans-serif; color: var(--fg); background: #7cc8ff; }
+  body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; touch-action: none; }
+  button { font: inherit; color: inherit; cursor: pointer; border: none; background: none; }
+
+  #barra { position: fixed; top: 0; left: 0; right: 0; height: 56px; z-index: 30; display: flex; gap: 8px; align-items: center; padding: 8px 10px; padding-top: max(8px, env(safe-area-inset-top)); background: linear-gradient(#ffffffcc, #ffffff00); }
+  .chip { background: #fffffff0; border-radius: 999px; padding: 6px 12px; font-weight: 800; font-size: 16px; box-shadow: 0 2px 0 #0002; white-space: nowrap; }
+  .boton { width: 44px; height: 44px; border-radius: 14px; background: #fffffff0; font-size: 24px; display: grid; place-items: center; box-shadow: 0 3px 0 #0002; flex: none; }
+  .boton.on { background: #fde047; transform: translateY(2px); }
+  .espacio { flex: 1; min-width: 0; }
+  #cLugar { min-width: 0; overflow: hidden; text-overflow: ellipsis; flex-shrink: 1; }
+  #candado.cargando { animation: llenar 3s linear forwards; }
+  @keyframes llenar { from { box-shadow: inset 0 0 0 0 #0003; } to { box-shadow: inset 0 0 0 24px #0003; } }
+
+  #vista { position: fixed; left: 0; right: 0; top: 0; bottom: 84px; overflow: hidden; }
+  #lienzo { position: absolute; left: 0; top: 0; height: 900px; transform-origin: 0 0; }
+  .fondo { position: absolute; inset: 0; }
+  .cuarto { position: absolute; top: 0; height: 900px; }
+  .pared { position: absolute; left: 0; right: 0; top: 0; height: 760px; }
+  .piso { position: absolute; left: 0; right: 0; top: 760px; bottom: 0; }
+  .zoclo { position: absolute; left: 0; right: 0; top: 744px; height: 16px; background: #0002; }
+  .ventana { position: absolute; top: 170px; width: 170px; height: 200px; border: 12px solid #fff; border-radius: 14px; background: linear-gradient(#7cc8ff, #d6f1ff); overflow: hidden; box-shadow: inset 0 0 0 4px #0001; }
+  .ventana::after { content: ''; position: absolute; left: 50%; top: 0; bottom: 0; width: 8px; margin-left: -4px; background: #fff; }
+  .ventana .astro { position: absolute; right: 14px; top: 14px; font-size: 40px; }
+  .divisor { position: absolute; top: 0; width: 28px; height: 500px; background: #e7d3b5; box-shadow: inset 0 -10px 0 #0001; }
+  .nombreCuarto { position: absolute; top: 70px; left: 0; right: 0; text-align: center; font-weight: 900; font-size: 30px; color: #0003; pointer-events: none; }
+
+  .ent { position: absolute; left: 0; top: 0; transform-origin: 50% 100%; touch-action: none; }
+  .ent svg { display: block; overflow: visible; }
+  .ent .emo { display: block; width: 100%; height: 100%; text-align: center; line-height: 1; font-family: "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif; }
+  .ent.levantado { z-index: 50 !important; filter: drop-shadow(0 18px 10px #0004); }
+  .ent.cae { transition: transform var(--t, .3s) cubic-bezier(.5, 0, .9, .6); }
+  .ent.flota { transition: transform 2.5s ease-out; }
+  .ent.brinca > * { animation: brinca .45s; }
+  @keyframes brinca { 40% { transform: translateY(-30px); } }
+  .ent.aplasta > * { animation: aplasta .25s; }
+  @keyframes aplasta { 40% { transform: scaleY(.85) scaleX(1.1); } }
+  .cuerpo { position: absolute; left: 0; top: 0; }
+  .ojos { animation: parpadeo 4.5s infinite; transform-origin: 60px 52px; }
+  @keyframes parpadeo { 0%, 94%, 100% { transform: scaleY(1); } 97% { transform: scaleY(.1); } }
+  .bocaAbierta { display: none; }
+  .comiendo .boca { display: none; }
+  .comiendo .bocaAbierta { display: inline; }
+  .tele-on .pantalla { animation: tele 2s linear infinite; }
+  @keyframes tele { 0% { fill: #60a5fa; } 33% { fill: #f472b6; } 66% { fill: #4ade80; } 100% { fill: #60a5fa; } }
+  .tele-on .show { display: inline; }
+  .show { display: none; }
+  .fuego { display: none; }
+  .estufa-on .fuego { display: inline; animation: fuego .3s infinite alternate; transform-origin: center bottom; transform-box: fill-box; }
+  @keyframes fuego { to { transform: scaleY(1.25); } }
+  .abierto .puerta { transform: scaleX(.15); }
+  .puerta { transition: transform .3s; transform-box: fill-box; transform-origin: right center; }
+  .burbuja { position: absolute; font-size: 44px; pointer-events: none; animation: sube 1.6s ease-out forwards; z-index: 60; font-family: "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif; }
+  @keyframes sube { from { transform: translate(-50%, 0) scale(.5); opacity: 0; } 20% { opacity: 1; transform: translate(-50%, -20px) scale(1); } to { transform: translate(-50%, -110px); opacity: 0; } }
+  .brillo { position: absolute; border-radius: 50%; pointer-events: none; background: radial-gradient(#fff7a8cc, #fde04722 55%, transparent 70%); z-index: 21; }
+  #oscuro { position: absolute; inset: 0; background: #0b1440; opacity: 0; pointer-events: none; transition: opacity .8s; z-index: 20; }
+  .noche #oscuro { opacity: .55; }
+
+  /* Mapa del pueblo */
+  .lugar { position: absolute; bottom: 140px; width: 300px; height: 380px; }
+  .lugar svg { width: 100%; height: 100%; display: block; overflow: visible; }
+  .lugar .letrero { position: absolute; left: 50%; bottom: -60px; transform: translateX(-50%); background: #fff; border-radius: 999px; padding: 6px 16px; font-weight: 900; font-size: 22px; white-space: nowrap; box-shadow: 0 4px 0 #0002; }
+  .lugar.pronto { filter: saturate(.55); }
+  .lugar.pronto::after { content: '🚧'; position: absolute; right: 10px; top: 120px; font-size: 64px; }
+  .lugar.sacude { animation: sacude .4s; }
+  @keyframes sacude { 25% { transform: rotate(-3deg); } 75% { transform: rotate(3deg); } }
+
+  /* Mochila, cajón de muebles, pintura y basura */
+  #bolsillo { position: fixed; left: 0; right: 0; bottom: 0; height: 84px; z-index: 30; background: #7c4a21; display: flex; align-items: center; gap: 8px; padding: 8px 10px max(8px, env(safe-area-inset-bottom)); box-shadow: 0 -4px 0 #0002; }
+  #bolsillo .lbl { font-size: 34px; flex: none; }
+  #ranuras { display: flex; gap: 8px; overflow-x: auto; flex: 1; scrollbar-width: none; }
+  .ranura { flex: none; width: 64px; height: 64px; border-radius: 16px; background: #a0632e; box-shadow: inset 0 3px 0 #0003; display: grid; place-items: center; font-size: 38px; overflow: hidden; touch-action: none; font-family: "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif; }
+  .ranura svg { width: 54px; height: 54px; }
+  #bolsillo.resalta { background: #9a5b2a; outline: 4px dashed #fde047; outline-offset: -6px; }
+  #cajon, #paleta { position: fixed; left: 8px; right: 8px; bottom: 92px; z-index: 31; background: #fffffff2; border-radius: 22px; padding: 10px; box-shadow: 0 6px 0 #0002; display: none; gap: 8px; overflow-x: auto; scrollbar-width: none; }
+  #cajon.abierto, #paleta.abierto { display: flex; }
+  #cajon button { flex: none; width: 76px; height: 76px; border-radius: 16px; background: #f1f5f9; display: grid; place-items: center; font-size: 42px; font-family: "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif; }
+  #cajon button svg { width: 62px; height: 62px; }
+  #paleta button { flex: none; width: 56px; height: 56px; border-radius: 50%; border: 4px solid #fff; box-shadow: 0 2px 0 #0003; }
+  #paleta button.sel { outline: 4px solid #1f2937; }
+  #paleta .ayuda { align-self: center; font-weight: 800; padding: 0 8px; white-space: nowrap; }
+  #basura { position: fixed; right: 12px; top: 70px; width: 84px; height: 84px; border-radius: 24px; background: #fee2e2; font-size: 48px; display: none; place-items: center; z-index: 40; box-shadow: 0 4px 0 #0002; }
+  #basura.ver { display: grid; }
+  #basura.encima { background: #fca5a5; transform: scale(1.15); }
+
+  .capa { position: fixed; inset: 0; z-index: 50; display: none; place-items: center; background: #0007; padding: 16px; }
+  .capa.abierta { display: grid; }
+  .tarjeta { background: #fff; border-radius: 24px; padding: 20px; width: min(94vw, 520px); max-height: 92vh; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+  .opc { display: flex; align-items: center; gap: 10px; padding: 4px 0; }
+  .opc input { width: 22px; height: 22px; }
+  .btn { background: #f1f5f9; border-radius: 999px; padding: 10px 16px; font-weight: 700; }
+  .btn.principal { background: #1f2937; color: #fff; }
+  .btn.peligro { background: #fee2e2; color: #b91c1c; }
+  #toast { position: fixed; left: 50%; bottom: 100px; transform: translateX(-50%); background: #111d; color: #fff; padding: 10px 16px; border-radius: 14px; font-weight: 700; z-index: 45; opacity: 0; transition: opacity .3s; pointer-events: none; text-align: center; max-width: 90vw; }
+  #toast.ver { opacity: 1; }
+  @media (max-width: 440px) { .chip { font-size: 14px; padding: 5px 9px; } .boton { width: 40px; height: 40px; font-size: 21px; } #barra { gap: 6px; } }
+</style>
+</head>
+<body>
+<header id="barra">
+  <button id="bMapa" class="boton" title="Pueblo">🗺️</button>
+  <span id="cLugar" class="chip"></span>
+  <span class="espacio"></span>
+  <button id="bNoche" class="boton" title="Día / noche">🌙</button>
+  <button id="bMuebles" class="boton" title="Muebles y juguetes">🛋️</button>
+  <button id="bPintar" class="boton" title="Pintar">🎨</button>
+  <button id="candado" class="boton" title="Mantén presionado 3 segundos">🔒</button>
+</header>
+
+<div id="vista"><div id="lienzo"></div></div>
+<div id="basura">🗑️</div>
+<div id="cajon"></div>
+<div id="paleta"></div>
+<footer id="bolsillo"><span class="lbl">🎒</span><div id="ranuras"></div></footer>
+
+<div id="panel" class="capa"><div class="tarjeta">
+  <h2>⚙️ Ajustes para adultos</h2>
+  <h3>Idioma / Language</h3>
+  <div id="pIdioma"></div>
+  <p style="color:#64748b;font-size:14px">Al tocar cada cosa, el juego dice su nombre en el idioma elegido. Todo se guarda solo en este aparato.</p>
+  <button class="btn peligro" id="bReiniciar">Empezar de nuevo (borrar la casa)</button>
+  <button class="btn principal" id="bCerrarPanel">Listo 🔒</button>
+</div></div>
+<div id="toast"></div>
+
+<script>
+// ---------- Utilidades ----------
+const $ = id => document.getElementById(id);
+const azar = n => Math.floor(Math.random() * n);
+const lim = (v, a, b) => Math.max(a, Math.min(b, v));
+let tToast;
+function toast(t) { const el = $('toast'); el.textContent = t; el.classList.add('ver'); clearTimeout(tToast); tToast = setTimeout(() => el.classList.remove('ver'), 2400); }
+
+// ---------- Voz y sonidos ----------
+let E;
+const T = (es, en) => E.idioma === 'es' ? es : E.idioma === 'en' ? en : `${es} · ${en}`;
+function vozDe(l) {
+  const vs = speechSynthesis.getVoices(), pref = l === 'es' ? ['es-mx', 'es-us', 'es'] : ['en-us', 'en-gb', 'en'];
+  for (const x of pref) { const v = vs.find(v => v.lang.replace('_', '-').toLowerCase().startsWith(x)); if (v) return v; }
+}
+function decir(partes) {
+  if (!('speechSynthesis' in window)) return;
+  speechSynthesis.cancel();
+  for (const { l, t } of partes) {
+    const u = new SpeechSynthesisUtterance(t);
+    u.lang = l === 'es' ? 'es-MX' : 'en-US'; u.rate = 0.9; u.pitch = 1.1;
+    const v = vozDe(l); if (v) u.voice = v;
+    speechSynthesis.speak(u);
+  }
+}
+const di = (es, en) => decir((E.idioma === 'ambos' ? ['es', 'en'] : [E.idioma]).map(l => ({ l, t: l === 'es' ? es : en })));
+if ('speechSynthesis' in window) speechSynthesis.getVoices();
+let ac;
+function audio() { ac ??= new (window.AudioContext || window.webkitAudioContext)(); ac.resume(); return ac; }
+function tono(f, t0, dur, tipo = 'sine', vol = 0.16) {
+  const a = audio(), o = a.createOscillator(), g = a.createGain(), t = a.currentTime + t0;
+  o.type = tipo; o.frequency.value = f;
+  g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(vol, t + 0.01); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  o.connect(g); g.connect(a.destination); o.start(t); o.stop(t + dur + 0.05);
+}
+const sfx = {
+  levantar: () => { tono(440, 0, 0.08, 'triangle', 0.1); tono(660, 0.05, 0.1, 'triangle', 0.1); },
+  caer:     () => { tono(150, 0, 0.1, 'triangle', 0.18); tono(90, 0.02, 0.12, 'sine', 0.15); },
+  risa:     () => [880, 988, 1175, 988, 1319].forEach((f, i) => tono(f, i * 0.07, 0.09, 'sine', 0.1)),
+  click:    () => tono(1200, 0, 0.05, 'square', 0.06),
+  pop:      () => tono(880, 0, 0.1, 'sine', 0.13),
+  nam:      () => { tono(300, 0, 0.08, 'sawtooth', 0.05); tono(250, 0.1, 0.08, 'sawtooth', 0.05); },
+  agua:     () => { for (let k = 0; k < 8; k++) tono(900 + Math.random() * 900, k * 0.05, 0.06, 'sine', 0.05); },
+  mochila:  () => { tono(523, 0, 0.1, 'triangle', 0.12); tono(784, 0.08, 0.15, 'triangle', 0.12); },
+};
+let tRadio = null;
+function radio(on) {   // una cancioncita mientras la radio está prendida
+  clearInterval(tRadio); tRadio = null;
+  if (!on) return;
+  const notas = [523, 659, 784, 659, 698, 880, 784, 659, 587, 698, 659, 523];
+  let k = 0;
+  tRadio = setInterval(() => { tono(notas[k % notas.length], 0, 0.28, 'triangle', 0.07); if (k % 2 === 0) tono(notas[k % notas.length] / 2, 0, 0.3, 'sine', 0.05); k++; }, 300);
+}
+
+// ---------- Dibujos (todos propios, sin emojis en muebles ni personajes) ----------
+const svg = (w, h, cuerpo) => `<svg viewBox="0 0 ${w} ${h}" width="100%" height="100%">${cuerpo}</svg>`;
+const MADERA = '#b7793f', MADERA2 = '#8b5426';
+function peloFrente(estilo, c) {
+  const gorra = `<path d="M25 52 Q26 15 60 15 Q94 15 95 52 Q88 32 72 29 Q60 37 44 29 Q31 34 25 52 Z" fill="${c}"/>`;
+  if (estilo === 'calvo') return '';
+  if (estilo === 'bebe') return `<path d="M56 19 q4 -12 12 -4 q-6 0 -6 6" fill="none" stroke="${c}" stroke-width="4" stroke-linecap="round"/>`;
+  if (estilo === 'rizado') { let s = ''; for (let a = 200; a <= 340; a += 20) { const r = a * Math.PI / 180; s += `<circle cx="${60 + Math.cos(r) * 32}" cy="${50 + Math.sin(r) * 32}" r="12" fill="${c}"/>`; } return s; }
+  if (estilo === 'chongo') return `<circle cx="60" cy="12" r="13" fill="${c}"/>` + gorra;
+  if (estilo === 'coletas') return gorra + `<circle cx="20" cy="44" r="13" fill="${c}"/><circle cx="100" cy="44" r="13" fill="${c}"/><circle cx="29" cy="40" r="4" fill="#f472b6"/><circle cx="91" cy="40" r="4" fill="#f472b6"/>`;
+  return gorra;
+}
+function svgPersonaje(p) {
+  const sentado = p.pose === 'sentado', dormido = p.pose === 'acostado', H = p.colorPelo;
+  let s = '';
+  if (p.pelo === 'largo') s += `<path d="M24 50 Q18 118 34 128 L86 128 Q102 118 96 50 Z" fill="${H}"/>`;
+  if (sentado) s += `<rect x="40" y="148" width="58" height="20" rx="9" fill="${p.pantalon}"/><rect x="80" y="150" width="18" height="78" rx="8" fill="${p.pantalon}"/><ellipse cx="95" cy="231" rx="14" ry="7" fill="#374151"/>`;
+  else s += `<rect x="42" y="156" width="16" height="72" rx="7" fill="${p.pantalon}"/><rect x="62" y="156" width="16" height="72" rx="7" fill="${p.pantalon}"/><ellipse cx="50" cy="231" rx="12" ry="6" fill="#374151"/><ellipse cx="70" cy="231" rx="12" ry="6" fill="#374151"/>`;
+  s += p.ropa === 'vestido' ? `<path d="M36 94 Q60 86 84 94 L98 ${sentado ? 168 : 186} L22 ${sentado ? 168 : 186} Z" fill="${p.color}"/>` : `<rect x="32" y="90" width="56" height="76" rx="18" fill="${p.color}"/>`;
+  s += `<rect x="19" y="97" width="15" height="58" rx="7" fill="${p.color}"/><rect x="86" y="97" width="15" height="58" rx="7" fill="${p.color}"/><circle cx="26.5" cy="159" r="8" fill="${p.piel}"/><circle cx="93.5" cy="159" r="8" fill="${p.piel}"/>`;
+  s += `<rect x="53" y="78" width="14" height="16" fill="${p.piel}"/><circle cx="60" cy="52" r="34" fill="${p.piel}"/>`;
+  s += dormido ? `<path d="M42 54 q6 5 12 0 M66 54 q6 5 12 0" stroke="#1f2937" stroke-width="3" fill="none" stroke-linecap="round"/>`
+               : `<g class="ojos"><ellipse cx="48" cy="52" rx="4.5" ry="5.5" fill="#1f2937"/><ellipse cx="72" cy="52" rx="4.5" ry="5.5" fill="#1f2937"/><circle cx="49.5" cy="50" r="1.5" fill="#fff"/><circle cx="73.5" cy="50" r="1.5" fill="#fff"/></g>`;
+  s += `<circle cx="40" cy="64" r="5" fill="#f87171" opacity=".35"/><circle cx="80" cy="64" r="5" fill="#f87171" opacity=".35"/>`;
+  s += `<path class="boca" d="M50 67 Q60 76 70 67" stroke="#7f1d1d" stroke-width="3" fill="none" stroke-linecap="round"/><ellipse class="bocaAbierta" cx="60" cy="71" rx="6" ry="7" fill="#7f1d1d"/>`;
+  s += peloFrente(p.pelo, H);
+  return svg(120, 240, s);
+}
+const CAT = {
+  // Muebles: w y h en unidades del mundo (la casa mide 900 de alto). sup = altura de la superficie donde se ponen cosas.
+  cama: { t: 'mueble', w: 300, h: 150, es: 'Cama', en: 'Bed', asientos: [{ dx: 15, dy: 78, pose: 'acostado' }],
+    svg: () => svg(300, 150, `<rect x="0" y="0" width="34" height="150" rx="12" fill="${MADERA}"/><rect x="270" y="56" width="26" height="94" rx="10" fill="${MADERA}"/><rect x="18" y="104" width="270" height="26" rx="8" fill="${MADERA2}"/><rect x="24" y="70" width="262" height="40" rx="14" fill="#fff"/><ellipse cx="72" cy="70" rx="38" ry="15" fill="#fefce8" stroke="#e5e7eb" stroke-width="2"/><rect x="118" y="62" width="168" height="52" rx="16" fill="#60a5fa"/><path d="M130 80 h140 M130 96 h140" stroke="#93c5fd" stroke-width="5"/>`) },
+  cuna: { t: 'mueble', w: 190, h: 150, es: 'Cuna', en: 'Crib', asientos: [{ dx: 0, dy: 72, pose: 'acostado' }],
+    svg: () => { let b = ''; for (let x = 18; x < 180; x += 20) b += `<rect x="${x}" y="22" width="7" height="70" rx="3" fill="#f9a8d4"/>`; return svg(190, 150, `<rect x="6" y="16" width="178" height="12" rx="6" fill="#f472b6"/>${b}<rect x="6" y="88" width="178" height="16" rx="6" fill="#f472b6"/><rect x="12" y="70" width="166" height="22" rx="8" fill="#fff"/><rect x="12" y="104" width="10" height="46" fill="#f472b6"/><rect x="168" y="104" width="10" height="46" fill="#f472b6"/>`); } },
+  silla: { t: 'mueble', w: 96, h: 170, es: 'Silla', en: 'Chair', asientos: [{ dx: 6, dy: 0, pose: 'sentado' }],
+    svg: () => svg(96, 170, `<rect x="4" y="0" width="16" height="104" rx="7" fill="${MADERA}"/><rect x="4" y="88" width="86" height="16" rx="7" fill="${MADERA}"/><rect x="10" y="100" width="10" height="70" fill="${MADERA2}"/><rect x="74" y="100" width="10" height="70" fill="${MADERA2}"/>`) },
+  mesa: { t: 'mueble', w: 230, h: 120, es: 'Mesa', en: 'Table', sup: 120,
+    svg: () => svg(230, 120, `<rect x="0" y="0" width="230" height="18" rx="8" fill="${MADERA}"/><rect x="18" y="14" width="14" height="106" fill="${MADERA2}"/><rect x="198" y="14" width="14" height="106" fill="${MADERA2}"/>`) },
+  sofa: { t: 'mueble', w: 330, h: 150, es: 'Sofá', en: 'Sofa', asientos: [{ dx: -70, dy: 0, pose: 'sentado' }, { dx: 80, dy: 0, pose: 'sentado' }],
+    svg: () => svg(330, 150, `<rect x="20" y="10" width="290" height="80" rx="30" fill="#f97316"/><rect x="0" y="62" width="44" height="78" rx="20" fill="#ea580c"/><rect x="286" y="62" width="44" height="78" rx="20" fill="#ea580c"/><rect x="34" y="78" width="262" height="52" rx="16" fill="#fb923c"/><path d="M165 82 v44" stroke="#ea580c" stroke-width="4"/><rect x="40" y="130" width="12" height="20" fill="#7c2d12"/><rect x="278" y="130" width="12" height="20" fill="#7c2d12"/>`) },
+  lampara: { t: 'mueble', w: 90, h: 250, es: 'Lámpara', en: 'Lamp', luz: true,
+    svg: () => svg(90, 250, `<path d="M16 0 L74 0 L88 70 L2 70 Z" fill="#fde68a" stroke="#f59e0b" stroke-width="3"/><rect x="41" y="68" width="8" height="166" fill="#78716c"/><ellipse cx="45" cy="240" rx="34" ry="10" fill="#57534e"/>`) },
+  tele: { t: 'mueble', w: 210, h: 190, es: 'Tele', en: 'TV',
+    svg: () => svg(210, 190, `<rect x="10" y="0" width="190" height="118" rx="12" fill="#1f2937"/><rect class="pantalla" x="20" y="10" width="170" height="98" rx="6" fill="#334155"/><text class="show" x="105" y="76" font-size="46" text-anchor="middle">🐠</text><rect x="0" y="126" width="210" height="64" rx="10" fill="${MADERA}"/><rect x="16" y="140" width="80" height="36" rx="6" fill="${MADERA2}"/><rect x="114" y="140" width="80" height="36" rx="6" fill="${MADERA2}"/>`) },
+  refri: { t: 'mueble', w: 150, h: 280, es: 'Refrigerador', en: 'Fridge',
+    svg: () => svg(150, 280, `<rect x="0" y="0" width="150" height="280" rx="18" fill="#e0f2fe"/><rect x="10" y="10" width="130" height="250" rx="10" fill="#bae6fd"/><rect x="18" y="70" width="114" height="6" fill="#7dd3fc"/><rect x="18" y="140" width="114" height="6" fill="#7dd3fc"/><rect x="18" y="200" width="114" height="6" fill="#7dd3fc"/><g class="puerta"><rect x="0" y="0" width="150" height="100" rx="18" fill="#f0f9ff" stroke="#bae6fd" stroke-width="3"/><rect x="0" y="104" width="150" height="176" rx="18" fill="#f0f9ff" stroke="#bae6fd" stroke-width="3"/><rect x="122" y="30" width="10" height="44" rx="5" fill="#94a3b8"/><rect x="122" y="130" width="10" height="60" rx="5" fill="#94a3b8"/></g>`) },
+  estufa: { t: 'mueble', w: 160, h: 160, es: 'Estufa', en: 'Stove', sup: 160,
+    svg: () => svg(160, 160, `<rect x="0" y="0" width="160" height="160" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="3"/><rect x="0" y="0" width="160" height="22" rx="8" fill="#334155"/><ellipse cx="45" cy="6" rx="26" ry="5" fill="#64748b"/><ellipse cx="115" cy="6" rx="26" ry="5" fill="#64748b"/><text class="fuego" x="45" y="6" font-size="30" text-anchor="middle">🔥</text><text class="fuego" x="115" y="6" font-size="30" text-anchor="middle">🔥</text><rect x="20" y="50" width="120" height="80" rx="10" fill="#1f2937"/><rect x="30" y="60" width="100" height="40" rx="6" fill="#475569"/><circle cx="40" cy="36" r="7" fill="#94a3b8"/><circle cx="120" cy="36" r="7" fill="#94a3b8"/>`) },
+  lavabo: { t: 'mueble', w: 120, h: 170, es: 'Lavabo', en: 'Sink',
+    svg: () => svg(120, 170, `<rect x="48" y="50" width="24" height="120" rx="8" fill="#e2e8f0"/><path d="M0 40 Q60 80 120 40 L120 30 L0 30 Z" fill="#f8fafc" stroke="#cbd5e1" stroke-width="3"/><rect x="54" y="6" width="12" height="28" rx="5" fill="#94a3b8"/><rect x="54" y="6" width="34" height="10" rx="5" fill="#94a3b8"/>`) },
+  tina: { t: 'mueble', w: 300, h: 130, es: 'Tina', en: 'Bathtub', frente: true, asientos: [{ dx: -30, dy: 0, pose: 'sentado', y0: -6 }],
+    svg: () => svg(300, 130, `<rect x="0" y="10" width="300" height="100" rx="40" fill="#f8fafc" stroke="#cbd5e1" stroke-width="4"/><rect x="10" y="10" width="280" height="14" rx="7" fill="#bae6fd"/><circle cx="60" cy="18" r="10" fill="#fff" opacity=".9"/><circle cx="90" cy="12" r="8" fill="#fff" opacity=".9"/><circle cx="220" cy="16" r="12" fill="#fff" opacity=".9"/><rect x="30" y="106" width="20" height="24" rx="8" fill="#94a3b8"/><rect x="250" y="106" width="20" height="24" rx="8" fill="#94a3b8"/>`) },
+  planta: { t: 'mueble', w: 100, h: 170, es: 'Planta', en: 'Plant',
+    svg: () => svg(100, 170, `<path d="M50 110 Q10 60 20 20 Q45 50 50 110 Q55 40 80 10 Q90 60 50 110 Q30 70 0 70 Q30 100 50 110 Q70 80 100 80 Q75 110 50 110" fill="#22c55e"/><path d="M20 105 L80 105 L70 170 L30 170 Z" fill="#c2410c"/>`) },
+  alfombra: { t: 'mueble', w: 320, h: 26, es: 'Alfombra', en: 'Rug', piso: true,
+    svg: () => svg(320, 26, `<ellipse cx="160" cy="13" rx="160" ry="13" fill="#a78bfa"/><ellipse cx="160" cy="13" rx="120" ry="8" fill="none" stroke="#ede9fe" stroke-width="4"/>`) },
+  cuadro: { t: 'mueble', w: 140, h: 104, es: 'Cuadro', en: 'Picture', pegado: true,
+    svg: () => svg(140, 104, `<rect x="0" y="0" width="140" height="104" rx="6" fill="${MADERA}"/><rect x="10" y="10" width="120" height="84" fill="#e0f2fe"/><path d="M22 90 A48 48 0 0 1 118 90" fill="none" stroke="#ef4444" stroke-width="8"/><path d="M30 90 A40 40 0 0 1 110 90" fill="none" stroke="#facc15" stroke-width="8"/><path d="M38 90 A32 32 0 0 1 102 90" fill="none" stroke="#22c55e" stroke-width="8"/><path d="M46 90 A24 24 0 0 1 94 90" fill="none" stroke="#3b82f6" stroke-width="8"/>`) },
+  repisa: { t: 'mueble', w: 210, h: 26, es: 'Repisa', en: 'Shelf', pegado: true, sup: 26,
+    svg: () => svg(210, 26, `<rect x="0" y="0" width="210" height="16" rx="5" fill="${MADERA}"/><path d="M20 16 L20 26 L40 16 M170 16 L190 26 L190 16" fill="${MADERA2}"/>`) },
+  espejo: { t: 'mueble', w: 110, h: 150, es: 'Espejo', en: 'Mirror', pegado: true,
+    svg: () => svg(110, 150, `<ellipse cx="55" cy="75" rx="55" ry="75" fill="#fcd34d"/><ellipse cx="55" cy="75" rx="45" ry="65" fill="#cffafe"/><path d="M30 50 L50 30 M35 70 L65 40" stroke="#fff" stroke-width="6" stroke-linecap="round"/>`) },
+  ropero: { t: 'mueble', w: 170, h: 280, es: 'Ropero', en: 'Wardrobe',
+    svg: () => svg(170, 280, `<rect x="0" y="0" width="170" height="270" rx="10" fill="${MADERA2}"/><rect x="10" y="10" width="150" height="250" fill="#fef3c7"/><path d="M30 40 h110" stroke="#78716c" stroke-width="4"/><rect x="34" y="44" width="30" height="70" rx="6" fill="#f472b6"/><rect x="72" y="44" width="30" height="80" rx="6" fill="#60a5fa"/><rect x="110" y="44" width="30" height="60" rx="6" fill="#4ade80"/><g class="puerta"><rect x="0" y="0" width="85" height="270" rx="8" fill="${MADERA}"/><rect x="85" y="0" width="85" height="270" rx="8" fill="${MADERA}"/><circle cx="72" cy="140" r="6" fill="#fcd34d"/><circle cx="98" cy="140" r="6" fill="#fcd34d"/></g><rect x="10" y="270" width="16" height="10" fill="${MADERA2}"/><rect x="144" y="270" width="16" height="10" fill="${MADERA2}"/>`) },
+  librero: { t: 'mueble', w: 160, h: 230, es: 'Librero', en: 'Bookcase', sup: 230,
+    svg: () => { let l = ''; const cs = ['#ef4444', '#3b82f6', '#22c55e', '#f59e0b', '#a855f7', '#ec4899']; for (let f = 0; f < 3; f++) for (let k = 0; k < 6; k++) l += `<rect x="${16 + k * 22}" y="${22 + f * 68}" width="18" height="${44 + (k * 7 + f * 3) % 12}" fill="${cs[(k + f) % 6]}"/>`; return svg(160, 230, `<rect x="0" y="0" width="160" height="230" rx="8" fill="${MADERA2}"/><rect x="8" y="8" width="144" height="214" fill="#fef3c7"/>${l}<rect x="8" y="76" width="144" height="8" fill="${MADERA2}"/><rect x="8" y="144" width="144" height="8" fill="${MADERA2}"/>`); } },
+  radio: { t: 'mueble', w: 100, h: 70, es: 'Radio', en: 'Radio',
+    svg: () => svg(100, 70, `<path d="M20 12 L70 0" stroke="#64748b" stroke-width="4"/><rect x="0" y="12" width="100" height="58" rx="12" fill="#ef4444"/><circle cx="30" cy="42" r="18" fill="#7f1d1d"/><circle cx="30" cy="42" r="8" fill="#fca5a5"/><rect x="58" y="26" width="30" height="12" rx="4" fill="#fde68a"/><circle cx="64" cy="54" r="5" fill="#fff"/><circle cx="82" cy="54" r="5" fill="#fff"/>`) },
+  // Cosas pequeñas (por ahora con emojis; se pueden cambiar por dibujos propios)
+  manzana: { t: 'cosa', emo: '🍎', es: 'Manzana', en: 'Apple', comida: true },
+  platano: { t: 'cosa', emo: '🍌', es: 'Plátano', en: 'Banana', comida: true },
+  pan: { t: 'cosa', emo: '🍞', es: 'Pan', en: 'Bread', comida: true },
+  leche: { t: 'cosa', emo: '🥛', es: 'Leche', en: 'Milk', comida: true },
+  queso: { t: 'cosa', emo: '🧀', es: 'Queso', en: 'Cheese', comida: true },
+  sandia: { t: 'cosa', emo: '🍉', es: 'Sandía', en: 'Watermelon', comida: true },
+  zanahoria: { t: 'cosa', emo: '🥕', es: 'Zanahoria', en: 'Carrot', comida: true },
+  galleta: { t: 'cosa', emo: '🍪', es: 'Galleta', en: 'Cookie', comida: true },
+  pastel: { t: 'cosa', emo: '🍰', es: 'Pastel', en: 'Cake', comida: true },
+  osito: { t: 'cosa', emo: '🧸', es: 'Osito', en: 'Teddy bear' },
+  pelota: { t: 'cosa', emo: '⚽', es: 'Pelota', en: 'Ball' },
+  globo: { t: 'cosa', emo: '🎈', es: 'Globo', en: 'Balloon', flota: true },
+  libro: { t: 'cosa', emo: '📕', es: 'Libro', en: 'Book' },
+  biblia: { t: 'cosa', emo: '📖', es: 'Biblia', en: 'Bible' },
+  flor: { t: 'cosa', emo: '🌷', es: 'Flor', en: 'Flower' },
+  patito: { t: 'cosa', emo: '🐥', es: 'Patito', en: 'Duckling' },
+  cepillo: { t: 'cosa', emo: '🪥', es: 'Cepillo de dientes', en: 'Toothbrush' },
+  jabon: { t: 'cosa', emo: '🧼', es: 'Jabón', en: 'Soap' },
+  guitarra: { t: 'cosa', emo: '🎸', es: 'Guitarra', en: 'Guitar' },
+  tambor: { t: 'cosa', emo: '🥁', es: 'Tambor', en: 'Drum' },
+};
+for (const c of Object.values(CAT)) if (c.t === 'cosa') { c.w = 66; c.h = 66; }
+const DE_REFRI = ['manzana', 'platano', 'pan', 'leche', 'queso', 'sandia', 'zanahoria', 'galleta', 'pastel'];
+const CAJON = ['cama', 'cuna', 'sofa', 'silla', 'mesa', 'lampara', 'tele', 'radio', 'librero', 'ropero', 'planta', 'alfombra', 'cuadro', 'repisa', 'espejo', 'tina', 'lavabo', 'refri', 'estufa',
+               'osito', 'pelota', 'globo', 'libro', 'biblia', 'flor', 'patito', 'guitarra', 'tambor'];
+const VERSICULOS = [['Dios es amor.', 'God is love.', '1 Juan 4:8'], ['El Señor es mi pastor.', 'The Lord is my shepherd.', 'Salmo 23:1'],
+                    ['Dios cuida de ti.', 'God cares for you.', '1 Pedro 5:7'], ['Den gracias a Dios.', 'Give thanks to God.', 'Salmo 136:1']];
+const TAM = { adulto: [120, 240], nino: [96, 192], bebe: [70, 140] };
+
+// ---------- Lugares ----------
+const PISO = 760;
+const ESCENAS = {
+  mapa: { w: 1600, nombre: ['El pueblo', 'The town'] },
+  casa: { w: 2400, nombre: ['La casa', 'The house'],
+    cuartos: [{ x: 0, es: 'Recámara', en: 'Bedroom' }, { x: 600, es: 'Baño', en: 'Bathroom' }, { x: 1200, es: 'Cocina', en: 'Kitchen' }, { x: 1800, es: 'Sala', en: 'Living room' }] },
+};
+const LUGARES = [
+  { k: 'casa', x: 140, es: 'Casa', en: 'House', listo: true },
+  { k: 'mercado', x: 500, es: 'Mercado', en: 'Market' },
+  { k: 'salon', x: 860, es: 'Salón', en: 'Salon' },
+  { k: 'iglesia', x: 1220, es: 'Iglesia y parque', en: 'Church & park' },
+];
+
+// ---------- Estado guardado ----------
+function casaInicial() {
+  let id = 1;
+  const m = (k, x, y = PISO, extra = {}) => ({ id: id++, k, esc: 'casa', x, y, ...extra });
+  const p = (x, y, look, extra = {}) => ({ id: id++, k: 'per', esc: 'casa', x, y, pose: 'parado', mira: 1, ...look, ...extra });
+  const ents = [
+    m('cama', 230), m('cuna', 500), m('lampara', 60), m('cuadro', 490, 330), m('alfombra', 300),
+    m('tina', 790), m('lavabo', 1060), m('espejo', 1060, 430),
+    m('refri', 1290), m('estufa', 1450), m('mesa', 1660), m('silla', 1560), m('silla', 1760, PISO, { f: true }),
+    m('sofa', 2015), m('tele', 2290), m('planta', 1850), m('alfombra', 2050), m('repisa', 2290, 420),
+  ];
+  const mesa = ents.find(e => e.k === 'mesa'), repisa = ents.find(e => e.k === 'repisa'), cama = ents.find(e => e.k === 'cama'), tina = ents.find(e => e.k === 'tina');
+  ents.push(m('manzana', 1620, PISO - 120), m('pan', 1700, PISO - 120), m('radio', 2250, 420 - 26), m('biblia', 2340, 420 - 26),
+            m('osito', 340, PISO - 80), m('patito', 860, PISO - 100), m('pelota', 2200, PISO));
+  const sofa = ents.find(e => e.k === 'sofa'), cuna = ents.find(e => e.k === 'cuna');
+  // Una familia para empezar (en la etapa del salón se podrán crear y vestir más)
+  ents.push(
+    p(0, 0, { tam: 'adulto', piel: '#c68642', pelo: 'corto', colorPelo: '#1f1300', ropa: 'camisa', color: '#3b82f6', pantalon: '#1e3a8a' }, { asiento: { id: sofa.id, i: 0 } }),
+    p(1480, PISO, { tam: 'adulto', piel: '#e0ac69', pelo: 'largo', colorPelo: '#4a2511', ropa: 'vestido', color: '#ef4444', pantalon: '#e0ac69' }),
+    p(380, PISO, { tam: 'nino', piel: '#e0ac69', pelo: 'coletas', colorPelo: '#4a2511', ropa: 'vestido', color: '#ec4899', pantalon: '#e0ac69' }),
+    p(2120, PISO, { tam: 'nino', piel: '#c68642', pelo: 'corto', colorPelo: '#1f1300', ropa: 'camisa', color: '#22c55e', pantalon: '#1e40af' }),
+    p(0, 0, { tam: 'bebe', piel: '#e0ac69', pelo: 'bebe', colorPelo: '#4a2511', ropa: 'camisa', color: '#fde047', pantalon: '#fde047' }, { asiento: { id: cuna.id, i: 0 } }),
+  );
+  return { ents, sigId: id };
+}
+const DEF = () => ({ idioma: 'ambos', noche: false, esc: 'mapa', cam: {}, bolsillo: [],
+  colores: { casa: { pared: ['#fde2e4', '#d1fae5', '#fef3c7', '#e0e7ff'], piso: ['#c08457', '#cbd5e1', '#d6a77a', '#b98b5e'] } }, ...casaInicial() });
+try { E = JSON.parse(localStorage.getItem('pueblito.estado')) || DEF(); } catch { E = DEF(); }
+let tGuardar;
+function guardar() { clearTimeout(tGuardar); tGuardar = setTimeout(() => { try { localStorage.setItem('pueblito.estado', JSON.stringify(E)); } catch {} }, 300); }
+const ent = id => E.ents.find(e => e.id === id);
+const enEscena = () => E.ents.filter(e => e.esc === E.esc);
+const CATde = e => e.k === 'per' ? null : CAT[e.k];
+function medidas(e) {
+  if (e.k !== 'per') { const c = CAT[e.k]; return [c.w, c.h]; }
+  const [w, h] = TAM[e.tam];
+  return e.pose === 'acostado' ? [h, w] : [w, h];
+}
+
+// ---------- Pantalla: escala y cámara ----------
+const vista = $('vista'), lienzo = $('lienzo');
+let S = 1, camX = 0;
+const elems = new Map();   // id → elemento del dibujo
+function medir() { S = vista.clientHeight / 900; aplicarCam(); }
+function aplicarCam() {
+  const vw = vista.clientWidth / S, w = ESCENAS[E.esc].w;
+  camX = w <= vw ? -(vw - w) / 2 : lim(camX, 0, w - vw);
+  lienzo.style.width = w + 'px';
+  lienzo.style.transform = `translate(${-camX * S}px, 0) scale(${S})`;
+}
+addEventListener('resize', medir);
+const aMundo = (cx, cy) => { const r = vista.getBoundingClientRect(); return [(cx - r.left) / S + camX, (cy - r.top) / S]; };
+
+// ---------- Construir cada lugar ----------
+function construir() {
+  lienzo.innerHTML = ''; elems.clear(); radio(false);
+  const esc = ESCENAS[E.esc];
+  $('cLugar').textContent = T(...esc.nombre);
+  document.body.classList.toggle('enMapa', E.esc === 'mapa');
+  ['bMuebles', 'bPintar'].forEach(id => $(id).style.display = E.esc === 'mapa' ? 'none' : '');
+  cerrarCajones();
+  if (E.esc === 'mapa') construirMapa(); else construirCasa();
+  const oscuro = document.createElement('div'); oscuro.id = 'oscuro'; lienzo.appendChild(oscuro);
+  lienzo.classList.toggle('noche', E.noche);
+  for (const e of enEscena()) crearElem(e);
+  for (const e of enEscena()) {   // lo que está encima de un mueble se mueve con él
+    if (e.k === 'per' || e.sobre || e.dueno || CAT[e.k].pegado) continue;
+    const d = superficieBajo(e, e.x, e.y);
+    if (d.sobre && Math.abs(d.y - e.y) < 2) e.sobre = { id: d.sobre.id, dx: e.x - d.sobre.x };
+  }
+  for (const e of enEscena()) colocar(e);
+  camX = E.cam[E.esc] ?? 0; medir();
+  if (enEscena().some(e => e.k === 'radio' && e.on)) radio(true);
+  pintarBolsillo();
+}
+function construirCasa() {
+  const esc = ESCENAS.casa, col = E.colores.casa;
+  const f = document.createElement('div'); f.className = 'fondo';
+  esc.cuartos.forEach((c, i) => {
+    f.insertAdjacentHTML('beforeend', `<div class="cuarto" style="left:${c.x}px;width:600px">
+      <div class="pared" data-pintar="pared" data-i="${i}" style="background:${col.pared[i]}"></div>
+      <div class="piso" data-pintar="piso" data-i="${i}" style="background:${col.piso[i]}"></div><div class="zoclo"></div>
+      <div class="ventana" style="left:${i === 1 ? 380 : 215}px"><span class="astro">${E.noche ? '🌙' : '☀️'}</span></div>
+      <div class="nombreCuarto">${T(c.es, c.en)}</div></div>`);
+    if (i) f.insertAdjacentHTML('beforeend', `<div class="divisor" style="left:${c.x - 14}px"></div>`);
+  });
+  lienzo.appendChild(f);
+}
+function construirMapa() {
+  const noche = E.noche;
+  const f = document.createElement('div'); f.className = 'fondo';
+  f.innerHTML = svg(1600, 900, `<defs><linearGradient id="cielo" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${noche ? '#1e1b4b' : '#7cc8ff'}"/><stop offset="1" stop-color="${noche ? '#4338ca' : '#e0f6ff'}"/></linearGradient></defs>
+    <rect width="1600" height="900" fill="url(#cielo)"/><text x="1450" y="130" font-size="90" text-anchor="middle">${noche ? '🌙' : '☀️'}</text>
+    ${noche ? [[200, 90], [520, 160], [800, 70], [1100, 180], [1300, 60], [350, 260], [950, 300]].map(([x, y]) => `<text x="${x}" y="${y}" font-size="34">⭐</text>`).join('')
+            : [[180, 140, 1], [620, 90, 1.3], [1050, 200, 0.9], [380, 300, 0.8]].map(([x, y, s]) => `<g transform="translate(${x} ${y}) scale(${s})"><ellipse cx="0" cy="0" rx="90" ry="38" fill="#fff"/><ellipse cx="-50" cy="12" rx="60" ry="30" fill="#fff"/><ellipse cx="55" cy="10" rx="62" ry="32" fill="#fff"/></g>`).join('')}
+    <path d="M0 620 Q300 470 620 600 Q900 480 1200 590 Q1420 500 1600 580 L1600 900 L0 900 Z" fill="#86efac"/>
+    <rect x="0" y="760" width="1600" height="140" fill="#4ade80"/><rect x="0" y="770" width="1600" height="56" fill="#94a3b8"/><path d="M0 798 H1600" stroke="#f8fafc" stroke-width="6" stroke-dasharray="40 30"/>`);
+  lienzo.appendChild(f);
+  const DIB = {
+    casa: `<path d="M20 170 L150 50 L280 170 Z" fill="#ef4444"/><rect x="40" y="165" width="220" height="215" fill="#fde68a"/><rect x="125" y="270" width="54" height="110" rx="8" fill="#92400e"/><rect x="60" y="200" width="50" height="50" fill="#bae6fd" stroke="#fff" stroke-width="6"/><rect x="190" y="200" width="50" height="50" fill="#bae6fd" stroke="#fff" stroke-width="6"/><rect x="210" y="70" width="30" height="70" fill="#7c2d12"/>`,
+    mercado: `<rect x="30" y="150" width="240" height="230" fill="#fef3c7"/><path d="M10 150 L290 150 L270 100 L30 100 Z" fill="#fff"/>${[0, 1, 2, 3, 4, 5, 6].map(k => `<path d="M${30 + k * 34} 100 L${47 + k * 34} 100 L${44 + k * 40} 150 L${10 + k * 40} 150 Z" fill="${k % 2 ? '#fff' : '#22c55e'}"/>`).join('')}<rect x="50" y="300" width="200" height="60" fill="#b7793f"/><text x="85" y="300" font-size="40">🍎</text><text x="135" y="300" font-size="40">🍌</text><text x="185" y="300" font-size="40">🥕</text><rect x="120" y="190" width="60" height="90" rx="6" fill="#92400e"/>`,
+    salon: `<rect x="30" y="110" width="240" height="270" fill="#fbcfe8"/><rect x="20" y="90" width="260" height="34" rx="10" fill="#db2777"/><rect x="50" y="170" width="90" height="120" fill="#fff" stroke="#db2777" stroke-width="6"/><text x="95" y="250" font-size="56" text-anchor="middle">👗</text><rect x="170" y="230" width="70" height="150" rx="8" fill="#9d174d"/><text x="205" y="210" font-size="44" text-anchor="middle">✂️</text>`,
+    iglesia: `<rect x="40" y="170" width="150" height="210" fill="#f8fafc"/><path d="M30 175 L115 95 L200 175 Z" fill="#60a5fa"/><rect x="95" y="20" width="40" height="90" fill="#f8fafc"/><path d="M89 25 L115 0 L141 25 Z" fill="#60a5fa"/><path d="M115 -40 V-4 M101 -26 H129" stroke="#facc15" stroke-width="8"/><rect x="95" y="290" width="40" height="90" rx="20" fill="#92400e"/><circle cx="115" cy="210" r="22" fill="#fde68a" stroke="#facc15" stroke-width="5"/><text x="245" y="330" font-size="70" text-anchor="middle">🌳</text><path d="M210 380 V300 M280 380 V300 M205 300 H285" stroke="#ef4444" stroke-width="7"/><rect x="232" y="350" width="26" height="8" fill="#92400e"/><path d="M238 300 V350 M252 300 V350" stroke="#64748b" stroke-width="3"/>`,
+  };
+  for (const L of LUGARES) {
+    const b = document.createElement('button');
+    b.className = 'lugar' + (L.listo ? '' : ' pronto'); b.style.left = L.x + 'px';
+    b.innerHTML = svg(300, 380, DIB[L.k]) + `<span class="letrero">${T(L.es, L.en)}</span>`;
+    b.onclick = () => {
+      audio();
+      if (L.listo) { sfx.mochila(); irA(L.k); return; }
+      b.classList.remove('sacude'); void b.offsetWidth; b.classList.add('sacude'); sfx.pop();
+      di(`${L.es}: ¡muy pronto!`, `${L.en}: coming soon!`);
+    };
+    lienzo.appendChild(b);
+  }
+}
+function irA(k) { E.cam[E.esc] = camX; E.esc = k; guardar(); construir(); di(...ESCENAS[k].nombre); }
+
+// ---------- Cada cosa en el dibujo ----------
+function zDe(e) {
+  if (e.k === 'per') return 40 + Math.round(e.y / 100);
+  const c = CAT[e.k];
+  return c.piso ? 2 : c.pegado ? 4 : c.frente ? 46 : c.t === 'cosa' ? 48 : 10;
+}
+function crearElem(e) {
+  const el = document.createElement('div');
+  el.className = 'ent'; el.dataset.id = e.id;
+  dibujarElem(e, el);
+  lienzo.appendChild(el); elems.set(e.id, el);
+  return el;
+}
+function dibujarElem(e, el = elems.get(e.id)) {
+  if (!el) return;
+  const [w, h] = medidas(e);
+  el.style.width = w + 'px'; el.style.height = h + 'px'; el.style.zIndex = zDe(e);
+  if (e.k === 'per') {
+    const [cw, ch] = TAM[e.tam];
+    const acostado = e.pose === 'acostado';
+    el.innerHTML = `<div class="cuerpo" style="width:${cw}px;height:${ch}px;${acostado ? `left:${(ch - cw) / 2}px;top:${(cw - ch) / 2}px;transform:rotate(-90deg)` : ''}">${svgPersonaje(e)}</div>`;
+  } else {
+    const c = CAT[e.k];
+    el.innerHTML = c.emo ? `<span class="emo" style="font-size:${c.h * 0.9}px">${c.emo}</span>` : c.svg(e);
+    el.classList.toggle('tele-on', e.k === 'tele' && !!e.on);
+    el.classList.toggle('estufa-on', e.k === 'estufa' && !!e.on);
+    el.classList.toggle('abierto', (e.k === 'refri' || e.k === 'ropero') && !!e.on);
+  }
+}
+// Dónde va cada cosa: los personajes sentados siguen a su mueble, las cosas en la mano siguen al personaje
+function posAsiento(p) {
+  const m = ent(p.asiento.id); if (!m || m.esc !== p.esc) return null;
+  const s = CAT[m.k].asientos[p.asiento.i], dir = m.f ? -1 : 1;
+  return { x: m.x + s.dx * dir, y: s.pose === 'acostado' ? m.y - s.dy + 22 : m.y + (s.y0 || 0), pose: s.pose, mira: dir };
+}
+function posMano(p) {
+  const [cw, ch] = TAM[p.tam], esc = cw / 120;
+  if (p.pose === 'acostado') return { x: p.x + 20 * esc, y: p.y - 10 * esc };
+  return { x: p.x + 34 * esc * (p.mira || 1), y: p.y - (ch - 175 * esc) };
+}
+function colocar(e, dependientes = true) {
+  if (e.k === 'per' && e.asiento) {
+    const a = posAsiento(e);
+    if (a) { e.x = a.x; e.y = a.y; if (e.pose !== a.pose) { e.pose = a.pose; dibujarElem(e); } e.mira = a.mira; }
+    else { e.asiento = null; e.pose = 'parado'; dibujarElem(e); }
+  }
+  if (e.dueno) { const d = ent(e.dueno); if (d && d.esc === e.esc) { const p = posMano(d); e.x = p.x; e.y = p.y; } else e.dueno = null; }
+  const el = elems.get(e.id); if (!el) return;
+  const [w, h] = medidas(e), voltear = e.k === 'per' ? (e.mira || 1) < 0 : e.f;
+  el.style.transform = `translate(${e.x - w / 2}px, ${e.y - h}px)${voltear ? ' scaleX(-1)' : ''}`;
+  if (e.k === 'per') el.style.zIndex = zDe(e);
+  if (CAT[e.k]?.luz) ponerBrillo(e);
+  if (!dependientes) return;
+  for (const o of enEscena()) {
+    if (o.k === 'per' && o.asiento?.id === e.id) colocar(o);
+    if (o.dueno === e.id) colocar(o, false);
+    if (o.sobre?.id === e.id) { o.x = e.x + o.sobre.dx; o.y = e.y - CAT[e.k].sup; colocar(o); }
+  }
+}
+function ponerBrillo(e) {
+  let b = lienzo.querySelector(`.brillo[data-de="${e.id}"]`);
+  if (!e.on) { b?.remove(); return; }
+  if (!b) { b = document.createElement('div'); b.className = 'brillo'; b.dataset.de = e.id; lienzo.appendChild(b); }
+  const r = 260; b.style.width = b.style.height = r * 2 + 'px';
+  b.style.left = (e.x - r) + 'px'; b.style.top = (e.y - CAT[e.k].h + 35 - r) + 'px';
+}
+function burbuja(e, emo) {
+  const b = document.createElement('div'); b.className = 'burbuja'; b.textContent = emo;
+  const [, h] = medidas(e); b.style.left = e.x + 'px'; b.style.top = (e.y - h - 30) + 'px';
+  lienzo.appendChild(b); setTimeout(() => b.remove(), 1700);
+}
+
+// ---------- Caer: cada cosa baja hasta el piso o el mueble que tenga abajo ----------
+function superficieBajo(e, x, y) {
+  let mejor = PISO, sobre = null;
+  for (const o of enEscena()) {
+    if (o === e || o.k === 'per' || o.dueno) continue;
+    const c = CAT[o.k]; if (!c.sup) continue;
+    const top = o.y - c.sup;
+    if (x > o.x - c.w / 2 + 8 && x < o.x + c.w / 2 - 8 && top >= y - 40 && top < mejor) { mejor = top; sobre = o; }
+  }
+  return { y: mejor, sobre };
+}
+function buscarAsiento(p, x, y) {
+  let mejor = null, dmin = 1e9;
+  for (const m of enEscena()) {
+    const c = CAT[m.k]; if (!c?.asientos) continue;
+    c.asientos.forEach((s, i) => {
+      if (E.ents.some(o => o !== p && o.asiento?.id === m.id && o.asiento.i === i)) return;   // ocupado
+      const dir = m.f ? -1 : 1, sx = m.x + s.dx * dir, sy = s.pose === 'acostado' ? m.y - s.dy : m.y - 80;
+      const d = Math.hypot(sx - x, (sy - y) * 0.7);
+      if (Math.abs(sx - x) < (s.pose === 'acostado' ? 140 : 80) && y > sy - 200 && y < sy + 90 && d < dmin) { dmin = d; mejor = { id: m.id, i }; }
+    });
+  }
+  return mejor;
+}
+function soltarEn(e, x, y) {
+  const esc = ESCENAS[E.esc], c = CATde(e);
+  e.x = lim(x, 40, esc.w - 40); e.sobre = null;
+  const el = elems.get(e.id);
+  if (e.k === 'per') {
+    const a = buscarAsiento(e, e.x, y);
+    if (a) {
+      e.asiento = a; colocar(e); sfx.caer();
+      const m = ent(a.id);
+      if (m.k === 'tina') { sfx.agua(); burbuja(e, '🫧'); } else if (CAT[m.k].asientos[a.i].pose === 'acostado') burbuja(e, E.noche ? '💤' : '😴');
+      guardar(); return;
+    }
+    e.pose = 'parado'; dibujarElem(e);
+  }
+  if (c?.pegado) { e.y = lim(y, c.h + 60, PISO - 120); colocar(e); sfx.click(); guardar(); return; }
+  if (c?.flota) {   // el globo sube hasta el techo
+    e.y = lim(y, c.h + 10, PISO); colocar(e);
+    requestAnimationFrame(() => { el.classList.add('flota'); e.y = c.h + 20 + azar(60); colocar(e); setTimeout(() => el.classList.remove('flota'), 2600); });
+    guardar(); return;
+  }
+  const destino = superficieBajo(e, e.x, y);
+  e.y = Math.min(y, destino.y); colocar(e);
+  const caida = destino.y - e.y;
+  requestAnimationFrame(() => {
+    el.style.setProperty('--t', Math.max(0.12, Math.sqrt(caida / 900)) + 's');
+    el.classList.add('cae'); e.y = destino.y; colocar(e);
+    setTimeout(() => {
+      el.classList.remove('cae'); el.classList.remove('aplasta'); void el.offsetWidth; el.classList.add('aplasta');
+      if (caida > 20) sfx.caer();
+    }, Math.max(120, Math.sqrt(caida / 900) * 1000));
+  });
+  if (destino.sobre) e.sobre = { id: destino.sobre.id, dx: e.x - destino.sobre.x };
+  guardar();
+}
+
+// ---------- Tocar las cosas: cada una hace algo y dice su nombre ----------
+function tocar(e) {
+  audio();
+  const el = elems.get(e.id);
+  if (e.k === 'per') {
+    sfx.risa(); burbuja(e, ['❤️', '😊', '🎵', '⭐', '😄', '👋'][azar(6)]);
+    if (e.pose === 'parado') { el.classList.remove('brinca'); void el.offsetWidth; el.classList.add('brinca'); }
+    return;
+  }
+  const c = CAT[e.k];
+  if (e.k === 'biblia') { const [es, en, ref] = VERSICULOS[azar(VERSICULOS.length)]; burbuja(e, '✨'); di(`La Biblia dice: ${es}`, `The Bible says: ${en}`); toast(`📖 ${T(es, en)} (${ref})`); return; }
+  if (['lampara', 'tele', 'radio', 'estufa', 'refri', 'ropero'].includes(e.k)) {
+    e.on = !e.on; sfx.click(); dibujarElem(e); colocar(e);
+    if (e.k === 'radio') radio(enEscena().some(o => o.k === 'radio' && o.on));
+    if (e.k === 'tele' && e.on) [523, 659, 784, 1047].forEach((f, i) => tono(f, i * 0.1, 0.15, 'triangle', 0.08));
+    if (e.k === 'refri' && e.on) sacarDelRefri(e);
+    if (e.on) di(c.es, c.en);
+    guardar(); return;
+  }
+  if (e.k === 'lavabo') { sfx.agua(); burbuja(e, '💧'); di(c.es, c.en); return; }
+  if (e.k === 'tina') { sfx.agua(); burbuja(e, '🫧'); di(c.es, c.en); return; }
+  if (e.k === 'guitarra') { [262, 330, 392, 523].forEach((f, i) => tono(f, i * 0.04, 0.8, 'triangle', 0.08)); burbuja(e, '🎵'); return; }
+  if (e.k === 'tambor') { tono(110, 0, 0.2, 'triangle', 0.25); tono(70, 0, 0.25, 'sine', 0.25); burbuja(e, '🥁'); return; }
+  if (e.k === 'pelota' || e.k === 'osito' || e.k === 'patito') { el.classList.remove('brinca'); void el.offsetWidth; el.classList.add('brinca'); sfx.pop(); }
+  else sfx.pop();
+  di(c.es, c.en);
+}
+function sacarDelRefri(r) {   // al abrir el refri sale algo de comer
+  const comida = enEscena().filter(e => CAT[e.k]?.comida).length;
+  if (comida >= 14) return;
+  const k = DE_REFRI[azar(DE_REFRI.length)];
+  const n = { id: E.sigId++, k, esc: E.esc, x: r.x + (r.f ? -1 : 1) * 110, y: r.y - 200 };
+  E.ents.push(n); crearElem(n); soltarEn(n, n.x, n.y);
+  setTimeout(() => di(CAT[k].es, CAT[k].en), 400);
+}
+
+// ---------- Dar cosas a los personajes: comer o tomarlas con la mano ----------
+function personajeEn(x, y, menos) {
+  return enEscena().filter(o => o.k === 'per' && o !== menos).find(o => { const [w, h] = medidas(o); return x > o.x - w / 2 && x < o.x + w / 2 && y > o.y - h && y < o.y; });
+}
+function darA(p, cosa) {
+  const c = CAT[cosa.k];
+  const [, h] = medidas(p);
+  if (c.comida) {   // a la boca: lo come en tres mordidas
+    const el = elems.get(cosa.id), pel = elems.get(p.id);
+    cosa.dueno = p.id; colocar(cosa);
+    pel.querySelector('svg')?.classList.add('comiendo');
+    let mordidas = 0;
+    const morder = () => {
+      mordidas++; sfx.nam();
+      el.style.transform += ' scale(.8)';
+      if (mordidas < 3) { setTimeout(morder, 350); return; }
+      pel.querySelector('svg')?.classList.remove('comiendo');
+      E.ents = E.ents.filter(o => o !== cosa); el.remove(); elems.delete(cosa.id);
+      burbuja(p, ['😋', '❤️', '😊'][azar(3)]); guardar();
+    };
+    setTimeout(morder, 200);
+    return;
+  }
+  const antes = E.ents.find(o => o.dueno === p.id);
+  if (antes) soltarEn(Object.assign(antes, { dueno: null }), antes.x + 40, antes.y);   // suelta lo que tenía
+  cosa.dueno = p.id; cosa.sobre = null; colocar(cosa); sfx.pop(); guardar();
+}
+
+// ---------- Mover con el dedo: arrastrar cosas y personajes, o deslizar para ver el lugar ----------
+let toque = null;   // { id, x0, y0, dx, dy, arrastrando } o { pan, x0, cam0 }
+const DESDE_MOCHILA = 'mochila';
+function inicioToque(e) {
+  audio();
+  if (e.target.closest('.lugar')) return;
+  const elEnt = e.target.closest('.ent');
+  if (modoPintar && !elEnt) { pintar(e.target); return; }
+  if (elEnt) {
+    const en = ent(+elEnt.dataset.id); if (!en) return;
+    const [mx, my] = aMundo(e.clientX, e.clientY);
+    toque = { id: en.id, x0: e.clientX, y0: e.clientY, dx: mx - en.x, dy: my - en.y, arrastrando: false };
+  } else toque = { pan: true, x0: e.clientX, cam0: camX };
+  try { vista.setPointerCapture(e.pointerId); } catch {}
+}
+function levantar(en) {
+  toque.arrastrando = true;
+  if (en.k === 'per' && en.asiento) { en.asiento = null; en.pose = 'parado'; dibujarElem(en); toque.dx = 0; toque.dy = -medidas(en)[1] * 0.4; }
+  if (en.dueno) { en.dueno = null; toque.dx = 0; toque.dy = -30; }
+  en.sobre = null;
+  elems.get(en.id).classList.add('levantado'); elems.get(en.id).classList.remove('cae', 'flota');
+  sfx.levantar();
+  $('basura').classList.toggle('ver', en.k !== 'per');
+}
+function movToque(e) {
+  if (!toque) return;
+  ultimoPuntero = [e.clientX, e.clientY];
+  if (toque.pan) { camX = toque.cam0 - (e.clientX - toque.x0) / S; aplicarCam(); return; }
+  const en = ent(toque.id); if (!en) return;
+  if (!toque.arrastrando) { if (Math.hypot(e.clientX - toque.x0, e.clientY - toque.y0) < 10) return; levantar(en); }
+  moverArrastre();
+}
+let ultimoPuntero = [0, 0];
+function moverArrastre() {
+  const en = ent(toque.id); if (!en) return;
+  const [mx, my] = aMundo(...ultimoPuntero);
+  en.x = mx - toque.dx; en.y = my - toque.dy;   // dx, dy: dónde se tomó (la base queda abajo del dedo)
+  colocar(en);
+  $('bolsillo').classList.toggle('resalta', sobreMochila());
+  $('basura').classList.toggle('encima', sobreBasura());
+}
+const sobreMochila = () => ultimoPuntero[1] > innerHeight - 84;
+function sobreBasura() { if (!$('basura').classList.contains('ver')) return false; const r = $('basura').getBoundingClientRect(); return ultimoPuntero[0] > r.left - 10 && ultimoPuntero[1] < r.bottom + 10; }
+function finToque() {
+  if (!toque) return;
+  const t = toque; toque = null;
+  if (t.pan) { E.cam[E.esc] = camX; return; }
+  const en = ent(t.id); if (!en) return;
+  if (!t.arrastrando) { tocar(en); return; }
+  elems.get(en.id)?.classList.remove('levantado');
+  $('bolsillo').classList.remove('resalta'); $('basura').classList.remove('ver', 'encima');
+  const [mx, my] = aMundo(...ultimoPuntero);
+  if (ultimoPuntero[1] > innerHeight - 84) { aMochila(en); return; }
+  if (en.k !== 'per' && ultimoEnBasura) { borrar(en); return; }
+  if (en.k !== 'per') { const p = personajeEn(mx, my, null); if (p && CAT[en.k].t === 'cosa') { darA(p, en); return; } }
+  soltarEn(en, en.x, en.y);
+}
+let ultimoEnBasura = false;
+vista.addEventListener('pointerdown', inicioToque);
+addEventListener('pointermove', e => { movToque(e); ultimoEnBasura = sobreBasura(); });
+addEventListener('pointerup', finToque);
+addEventListener('pointercancel', finToque);
+// Al arrastrar cerca de la orilla, el lugar se mueve solo
+(function orilla() {
+  if (toque?.arrastrando) {
+    const x = ultimoPuntero[0], v = x < 60 ? -14 : x > innerWidth - 60 ? 14 : 0;
+    if (v) { camX += v / S; aplicarCam(); moverArrastre(); }
+  }
+  requestAnimationFrame(orilla);
+})();
+function borrar(en) {
+  for (const o of E.ents) { if (o.dueno === en.id) o.dueno = null; if (o.sobre?.id === en.id) o.sobre = null; if (o.asiento?.id === en.id) o.asiento = null; }
+  E.ents = E.ents.filter(o => o !== en); elems.get(en.id)?.remove(); elems.delete(en.id);
+  lienzo.querySelector(`.brillo[data-de="${en.id}"]`)?.remove();
+  for (const o of enEscena()) if (o.k === 'per' || !o.sobre) colocar(o);
+  tono(300, 0, 0.12, 'sine', 0.12); tono(200, 0.08, 0.15, 'sine', 0.12); guardar();
+}
+
+// ---------- La mochila: llevar personajes y cosas de un lugar a otro ----------
+const MAX_MOCHILA = 8;
+function aMochila(en) {
+  if (E.bolsillo.length >= MAX_MOCHILA) { toast('🎒 ' + T('¡La mochila está llena!', 'The backpack is full!')); soltarEn(en, en.x, en.y); return; }
+  for (const o of E.ents) if (o.dueno === en.id) { o.esc = DESDE_MOCHILA; o.dueno = en.id; }   // lo que lleva en la mano va con él
+  en.esc = DESDE_MOCHILA; en.asiento = null; en.sobre = null; en.pose = 'parado';
+  E.bolsillo.push(en.id);
+  elems.get(en.id)?.remove(); elems.delete(en.id);
+  for (const o of E.ents) if (o.dueno === en.id) { elems.get(o.id)?.remove(); elems.delete(o.id); }
+  lienzo.querySelector(`.brillo[data-de="${en.id}"]`)?.remove();
+  sfx.mochila(); pintarBolsillo(); guardar();
+}
+function miniatura(en) {
+  if (en.k === 'per') return svgPersonaje({ ...en, pose: 'parado' }).replace('viewBox="0 0 120 240"', 'viewBox="10 0 100 100"');
+  const c = CAT[en.k]; return c.emo || c.svg(en);
+}
+function pintarBolsillo() {
+  const r = $('ranuras'); r.innerHTML = '';
+  for (const id of E.bolsillo) {
+    const en = ent(id); if (!en) continue;
+    const b = document.createElement('div'); b.className = 'ranura'; b.innerHTML = miniatura(en);
+    b.addEventListener('pointerdown', ev => {   // sacar de la mochila: se arrastra al lugar
+      audio();
+      if (E.esc === 'mapa') { toast('🗺️ ' + T('Entra a un lugar para sacarlo', 'Go into a place to take it out')); return; }
+      E.bolsillo = E.bolsillo.filter(x => x !== id);
+      en.esc = E.esc;
+      const [mx, my] = aMundo(ev.clientX, ev.clientY);
+      const [, h] = medidas(en);
+      en.x = mx; en.y = Math.min(my + h * 0.4, PISO);
+      crearElem(en);
+      for (const o of E.ents) if (o.dueno === en.id && o.esc === DESDE_MOCHILA) { o.esc = E.esc; crearElem(o); }
+      colocar(en);
+      ultimoPuntero = [ev.clientX, ev.clientY];
+      toque = { id: en.id, x0: ev.clientX, y0: ev.clientY, dx: 0, dy: -h * 0.4, arrastrando: false };
+      levantar(en); moverArrastre(); pintarBolsillo();
+      try { vista.setPointerCapture(ev.pointerId); } catch {}
+    });
+    r.appendChild(b);
+  }
+  for (let k = E.bolsillo.length; k < 4; k++) r.insertAdjacentHTML('beforeend', '<div class="ranura" style="opacity:.5"></div>');
+}
+
+// ---------- Muebles y juguetes nuevos, y pintar paredes y pisos ----------
+function cerrarCajones() { ['cajon', 'paleta'].forEach(id => $(id).classList.remove('abierto')); $('bMuebles').classList.remove('on'); $('bPintar').classList.remove('on'); modoPintar = false; }
+$('bMuebles').onclick = () => {
+  audio(); const abrir = !$('cajon').classList.contains('abierto'); cerrarCajones();
+  if (!abrir) return;
+  $('cajon').classList.add('abierto'); $('bMuebles').classList.add('on');
+  const c = $('cajon'); c.innerHTML = '';
+  for (const k of CAJON) {
+    const b = document.createElement('button'); b.innerHTML = CAT[k].emo || CAT[k].svg({});
+    b.onclick = () => {
+      const vw = vista.clientWidth / S, x = camX + vw / 2 + (Math.random() - 0.5) * 200;
+      const n = { id: E.sigId++, k, esc: E.esc, x, y: CAT[k].pegado ? 380 : 120 };
+      E.ents.push(n); crearElem(n); soltarEn(n, x, n.y); di(CAT[k].es, CAT[k].en);
+    };
+    c.appendChild(b);
+  }
+};
+let modoPintar = false, colorPintar = '#fde2e4';
+const COLORES_PARED = ['#fde2e4', '#fecaca', '#fef3c7', '#d1fae5', '#cffafe', '#e0e7ff', '#f3e8ff', '#ffffff', '#c08457', '#cbd5e1', '#86efac', '#fda4af'];
+$('bPintar').onclick = () => {
+  audio(); const abrir = !$('paleta').classList.contains('abierto'); cerrarCajones();
+  if (!abrir) return;
+  modoPintar = true; $('paleta').classList.add('abierto'); $('bPintar').classList.add('on');
+  const p = $('paleta'); p.innerHTML = `<span class="ayuda">🖌️</span>`;
+  for (const col of COLORES_PARED) {
+    const b = document.createElement('button'); b.style.background = col; b.className = col === colorPintar ? 'sel' : '';
+    b.onclick = () => { colorPintar = col; p.querySelectorAll('button').forEach(x => x.classList.toggle('sel', x === b)); sfx.pop(); };
+    p.appendChild(b);
+  }
+  di('Elige un color y toca una pared o un piso.', 'Pick a color and tap a wall or a floor.');
+};
+function pintar(objetivo) {
+  const zona = objetivo.closest('[data-pintar]'); if (!zona || E.esc !== 'casa') return;
+  const i = +zona.dataset.i, tipo = zona.dataset.pintar;
+  E.colores.casa[tipo][i] = colorPintar; zona.style.background = colorPintar;
+  sfx.agua(); guardar();
+}
+
+// ---------- Día y noche ----------
+function pintarNoche() { $('bNoche').textContent = E.noche ? '☀️' : '🌙'; lienzo.classList.toggle('noche', E.noche); lienzo.querySelectorAll('.astro').forEach(a => a.textContent = E.noche ? '🌙' : '☀️'); }
+$('bNoche').onclick = () => {
+  audio(); E.noche = !E.noche; guardar();
+  if (E.esc === 'mapa') construir(); else pintarNoche();
+  E.noche ? [784, 659, 523].forEach((f, i) => tono(f, i * 0.15, 0.3, 'sine', 0.08)) : [523, 659, 784].forEach((f, i) => tono(f, i * 0.12, 0.25, 'triangle', 0.08));
+  if (E.noche) for (const p of enEscena()) if (p.pose === 'acostado') burbuja(p, '💤');
+  di(E.noche ? 'Buenas noches' : 'Buenos días', E.noche ? 'Good night' : 'Good morning');
+};
+$('bMapa').onclick = () => { audio(); if (E.esc !== 'mapa') irA('mapa'); };
+
+// ---------- Ajustes para adultos (mantener 🔒 3 segundos) ----------
+const bCand = $('candado');
+let tCand = null;
+bCand.addEventListener('pointerdown', () => { bCand.classList.add('cargando'); tCand = setTimeout(() => { tCand = null; bCand.classList.remove('cargando'); abrirPanel(); }, 3000); });
+const soltarCandado = () => { if (tCand) { clearTimeout(tCand); tCand = null; bCand.classList.remove('cargando'); } };
+['pointerup', 'pointerleave', 'pointercancel'].forEach(t => bCand.addEventListener(t, soltarCandado));
+addEventListener('contextmenu', e => e.preventDefault());
+function abrirPanel() {
+  const cont = $('pIdioma'); cont.innerHTML = '';
+  for (const [v, txt] of [['es', 'Español'], ['en', 'English'], ['ambos', 'Bilingüe (español + English)']]) {
+    const d = document.createElement('div'); d.className = 'opc';
+    d.innerHTML = `<input type="radio" name="idioma" id="id-${v}" ${E.idioma === v ? 'checked' : ''}><label for="id-${v}">${txt}</label>`;
+    d.querySelector('input').onchange = () => { E.idioma = v; guardar(); };
+    cont.appendChild(d);
+  }
+  $('panel').classList.add('abierta');
+}
+$('bCerrarPanel').onclick = () => { $('panel').classList.remove('abierta'); construir(); };
+$('bReiniciar').onclick = () => {
+  if (!confirm('¿Borrar la casa, los muebles y los personajes y empezar de nuevo? Esto no se puede deshacer.')) return;
+  const idioma = E.idioma; E = DEF(); E.idioma = idioma; guardar(); $('panel').classList.remove('abierta'); construir();
+};
+
+construir(); pintarNoche();
+</script>
+</body>
+</html>
