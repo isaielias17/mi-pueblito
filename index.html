@@ -102,6 +102,26 @@
   .btn { background: #f1f5f9; border-radius: 999px; padding: 10px 16px; font-weight: 700; }
   .btn.principal { background: #1f2937; color: #fff; }
   .btn.peligro { background: #fee2e2; color: #b91c1c; }
+  .vapor { display: none; }
+  .cocinando .vapor { display: inline; animation: vapor 1s ease-in-out infinite; }
+  @keyframes vapor { 50% { opacity: .5; transform: translateY(-6px); } }
+  .cocinando > svg { animation: hierve .3s infinite alternate; }
+  @keyframes hierve { to { transform: translateY(-2px); } }
+  .licuando > svg { animation: licua .08s infinite alternate; }
+  @keyframes licua { from { transform: translateX(-3px) rotate(-2deg); } to { transform: translateX(3px) rotate(2deg); } }
+  #cobroCosas { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; align-items: center; margin-top: 20px; }
+  .cosaCobro { display: flex; flex-direction: column; align-items: center; font-size: 46px; line-height: 1; }
+  .cosaCobro b { font-size: 20px; background: #fef3c7; border: 2px solid #f59e0b; border-radius: 999px; padding: 0 10px; margin-top: 4px; }
+  .mas { font-size: 28px; font-weight: 900; color: #94a3b8; }
+  #cobroTotal { display: flex; flex-direction: column; align-items: center; }
+  #cobroTotal span { font-size: 84px; font-weight: 900; line-height: 1; color: #b45309; }
+  #cobroTotal small { font-size: 18px; font-weight: 800; }
+  #cobroBandeja { min-height: 64px; width: 100%; background: #f1f5f9; border-radius: 18px; padding: 8px; display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
+  .monedaPuesta { width: 48px; height: 48px; border-radius: 50%; background: radial-gradient(#fde68a, #f59e0b); border: 3px solid #b45309; display: grid; place-items: center; font-weight: 900; font-size: 20px; animation: cae .3s ease-out; }
+  @keyframes cae { from { transform: translateY(-40px); opacity: 0; } }
+  #cobroMoneda { width: 110px; height: 110px; border-radius: 50%; background: #fef3c7; font-size: 64px; box-shadow: 0 6px 0 #f59e0b; font-family: "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif; }
+  #cobroMoneda:active { transform: translateY(4px); box-shadow: 0 2px 0 #f59e0b; }
+  #cobroMoneda:disabled { opacity: .4; }
   #toast { position: fixed; left: 50%; bottom: 100px; transform: translateX(-50%); background: #111d; color: #fff; padding: 10px 16px; border-radius: 14px; font-weight: 700; z-index: 45; opacity: 0; transition: opacity .3s; pointer-events: none; text-align: center; max-width: 90vw; }
   #toast.ver { opacity: 1; }
   @media (max-width: 440px) { .chip { font-size: 14px; padding: 5px 9px; } .boton { width: 40px; height: 40px; font-size: 21px; } #barra { gap: 6px; } }
@@ -131,6 +151,16 @@
   <p style="color:#64748b;font-size:14px">Al tocar cada cosa, el juego dice su nombre en el idioma elegido. Todo se guarda solo en este aparato.</p>
   <button class="btn peligro" id="bReiniciar">Empezar de nuevo (borrar la casa)</button>
   <button class="btn principal" id="bCerrarPanel">Listo 🔒</button>
+</div></div>
+<div id="cobro" class="capa"><div class="tarjeta" style="align-items:center;position:relative">
+  <button class="chip" id="cobroOir" style="position:absolute;right:12px;top:12px">🔊</button>
+  <div id="cobroCosas"></div>
+  <div id="cobroTotal"></div>
+  <div id="cobroBandeja"></div>
+  <div style="display:flex;gap:14px;align-items:center">
+    <button id="cobroMoneda">🪙</button>
+    <button id="cobroListo" class="btn">✖️</button>
+  </div>
 </div></div>
 <div id="toast"></div>
 
@@ -234,8 +264,8 @@ const CAT = {
     svg: () => svg(210, 190, `<rect x="10" y="0" width="190" height="118" rx="12" fill="#1f2937"/><rect class="pantalla" x="20" y="10" width="170" height="98" rx="6" fill="#334155"/><text class="show" x="105" y="76" font-size="46" text-anchor="middle">🐠</text><rect x="0" y="126" width="210" height="64" rx="10" fill="${MADERA}"/><rect x="16" y="140" width="80" height="36" rx="6" fill="${MADERA2}"/><rect x="114" y="140" width="80" height="36" rx="6" fill="${MADERA2}"/>`) },
   refri: { t: 'mueble', w: 150, h: 280, es: 'Refrigerador', en: 'Fridge',
     svg: () => svg(150, 280, `<rect x="0" y="0" width="150" height="280" rx="18" fill="#e0f2fe"/><rect x="10" y="10" width="130" height="250" rx="10" fill="#bae6fd"/><rect x="18" y="70" width="114" height="6" fill="#7dd3fc"/><rect x="18" y="140" width="114" height="6" fill="#7dd3fc"/><rect x="18" y="200" width="114" height="6" fill="#7dd3fc"/><g class="puerta"><rect x="0" y="0" width="150" height="100" rx="18" fill="#f0f9ff" stroke="#bae6fd" stroke-width="3"/><rect x="0" y="104" width="150" height="176" rx="18" fill="#f0f9ff" stroke="#bae6fd" stroke-width="3"/><rect x="122" y="30" width="10" height="44" rx="5" fill="#94a3b8"/><rect x="122" y="130" width="10" height="60" rx="5" fill="#94a3b8"/></g>`) },
-  estufa: { t: 'mueble', w: 160, h: 160, es: 'Estufa', en: 'Stove', sup: 160,
-    svg: () => svg(160, 160, `<rect x="0" y="0" width="160" height="160" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="3"/><rect x="0" y="0" width="160" height="22" rx="8" fill="#334155"/><ellipse cx="45" cy="6" rx="26" ry="5" fill="#64748b"/><ellipse cx="115" cy="6" rx="26" ry="5" fill="#64748b"/><text class="fuego" x="45" y="6" font-size="30" text-anchor="middle">🔥</text><text class="fuego" x="115" y="6" font-size="30" text-anchor="middle">🔥</text><rect x="20" y="50" width="120" height="80" rx="10" fill="#1f2937"/><rect x="30" y="60" width="100" height="40" rx="6" fill="#475569"/><circle cx="40" cy="36" r="7" fill="#94a3b8"/><circle cx="120" cy="36" r="7" fill="#94a3b8"/>`) },
+  estufa: { t: 'mueble', w: 210, h: 160, es: 'Estufa', en: 'Stove', sup: 160,
+    svg: () => svg(210, 160, `<rect x="0" y="0" width="210" height="160" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="3"/><rect x="0" y="0" width="210" height="22" rx="8" fill="#334155"/><ellipse cx="52" cy="6" rx="32" ry="5" fill="#64748b"/><ellipse cx="158" cy="6" rx="32" ry="5" fill="#64748b"/><text class="fuego" x="52" y="6" font-size="30" text-anchor="middle">🔥</text><text class="fuego" x="158" y="6" font-size="30" text-anchor="middle">🔥</text><rect x="25" y="50" width="160" height="80" rx="10" fill="#1f2937"/><rect x="37" y="60" width="136" height="40" rx="6" fill="#475569"/><circle cx="50" cy="36" r="7" fill="#94a3b8"/><circle cx="105" cy="36" r="7" fill="#94a3b8"/><circle cx="160" cy="36" r="7" fill="#94a3b8"/>`) },
   lavabo: { t: 'mueble', w: 120, h: 170, es: 'Lavabo', en: 'Sink',
     svg: () => svg(120, 170, `<rect x="48" y="50" width="24" height="120" rx="8" fill="#e2e8f0"/><path d="M0 40 Q60 80 120 40 L120 30 L0 30 Z" fill="#f8fafc" stroke="#cbd5e1" stroke-width="3"/><rect x="54" y="6" width="12" height="28" rx="5" fill="#94a3b8"/><rect x="54" y="6" width="34" height="10" rx="5" fill="#94a3b8"/>`) },
   tina: { t: 'mueble', w: 300, h: 130, es: 'Tina', en: 'Bathtub', frente: true, asientos: [{ dx: -30, dy: 0, pose: 'sentado', y0: -6 }],
@@ -277,10 +307,67 @@ const CAT = {
   jabon: { t: 'cosa', emo: '🧼', es: 'Jabón', en: 'Soap' },
   guitarra: { t: 'cosa', emo: '🎸', es: 'Guitarra', en: 'Guitar' },
   tambor: { t: 'cosa', emo: '🥁', es: 'Tambor', en: 'Drum' },
+  // Ingredientes del mercado
+  huevo: { t: 'cosa', emo: '🥚', es: 'Huevo', en: 'Egg', comida: true },
+  tomate: { t: 'cosa', emo: '🍅', es: 'Tomate', en: 'Tomato', comida: true },
+  cebolla: { t: 'cosa', emo: '🧅', es: 'Cebolla', en: 'Onion', comida: true },
+  papa: { t: 'cosa', emo: '🥔', es: 'Papa', en: 'Potato', comida: true },
+  aguacate: { t: 'cosa', emo: '🥑', es: 'Aguacate', en: 'Avocado', comida: true },
+  lechuga: { t: 'cosa', emo: '🥬', es: 'Lechuga', en: 'Lettuce', comida: true },
+  maiz: { t: 'cosa', emo: '🌽', es: 'Elote', en: 'Corn', comida: true },
+  fresa: { t: 'cosa', emo: '🍓', es: 'Fresa', en: 'Strawberry', comida: true, fruta: true },
+  naranja: { t: 'cosa', emo: '🍊', es: 'Naranja', en: 'Orange', comida: true, fruta: true },
+  uvas: { t: 'cosa', emo: '🍇', es: 'Uvas', en: 'Grapes', comida: true, fruta: true },
+  pina: { t: 'cosa', emo: '🍍', es: 'Piña', en: 'Pineapple', comida: true, fruta: true },
+  frijoles: { t: 'cosa', emo: '🫘', es: 'Frijoles', en: 'Beans', comida: true },
+  arroz: { t: 'cosa', emo: '🌾', es: 'Arroz', en: 'Rice', comida: true },
+  tortilla: { t: 'cosa', emo: '🫓', es: 'Tortilla', en: 'Tortilla', comida: true },
+  chocolate: { t: 'cosa', emo: '🍫', es: 'Chocolate', en: 'Chocolate', comida: true },
+  // Platillos que salen de la cocina
+  huevo_frito: { t: 'cosa', emo: '🍳', es: 'Huevo frito', en: 'Fried egg', comida: true, platillo: true },
+  papas_fritas: { t: 'cosa', emo: '🍟', es: 'Papas fritas', en: 'French fries', comida: true, platillo: true },
+  palomitas: { t: 'cosa', emo: '🍿', es: 'Palomitas', en: 'Popcorn', comida: true, platillo: true },
+  quesadilla: { t: 'cosa', emo: '🌮', es: 'Quesadilla', en: 'Quesadilla', comida: true, platillo: true },
+  taco: { t: 'cosa', emo: '🌮', es: 'Taco', en: 'Taco', comida: true, platillo: true },
+  arroz_cocido: { t: 'cosa', emo: '🍚', es: 'Arroz', en: 'Rice', comida: true, platillo: true },
+  frijoles_olla: { t: 'cosa', emo: '🥘', es: 'Frijoles de la olla', en: 'Pot beans', comida: true, platillo: true },
+  sopa: { t: 'cosa', emo: '🍲', es: 'Sopa de verduras', en: 'Vegetable soup', comida: true, platillo: true },
+  arroz_leche: { t: 'cosa', emo: '🥣', es: 'Arroz con leche', en: 'Rice pudding', comida: true, platillo: true },
+  chocolate_caliente: { t: 'cosa', emo: '☕', es: 'Chocolate caliente', en: 'Hot chocolate', comida: true, platillo: true },
+  elote_asado: { t: 'cosa', emo: '🌽', es: 'Elote asado', en: 'Grilled corn', comida: true, platillo: true },
+  jugo: { t: 'cosa', emo: '🧃', es: 'Jugo', en: 'Juice', comida: true, platillo: true },
+  licuado: { t: 'cosa', emo: '🥤', es: 'Licuado', en: 'Smoothie', comida: true, platillo: true },
+  // Utensilios de cocina: se les echan ingredientes
+  olla: { t: 'mueble', w: 120, h: 86, es: 'Olla', en: 'Pot', contenedor: true,
+    svg: e => svg(120, 86, `<text class="vapor" x="60" y="-6" font-size="34" text-anchor="middle">♨️</text><rect x="0" y="18" width="16" height="10" rx="5" fill="#475569"/><rect x="104" y="18" width="16" height="10" rx="5" fill="#475569"/><path d="M10 14 H110 L102 80 Q60 92 18 80 Z" fill="#64748b"/><ellipse cx="60" cy="14" rx="50" ry="10" fill="#334155"/>${(e.dentro || []).slice(0, 4).map((k, i) => `<text x="${30 + i * 20}" y="${20 - (i % 2) * 6}" font-size="22" text-anchor="middle">${CAT[k].emo}</text>`).join('')}`) },
+  licuadora: { t: 'mueble', w: 90, h: 150, es: 'Licuadora', en: 'Blender', contenedor: true,
+    svg: e => svg(90, 150, `<path d="M14 0 H76 L68 96 H22 Z" fill="#e0f2fe" stroke="#7dd3fc" stroke-width="4" opacity=".9"/>${(e.dentro || []).slice(0, 4).map((k, i) => `<text x="45" y="${86 - i * 20}" font-size="24" text-anchor="middle">${CAT[k].emo}</text>`).join('')}<rect x="10" y="96" width="70" height="54" rx="12" fill="#ef4444"/><circle cx="45" cy="124" r="10" fill="#fff"/><rect x="18" y="-8" width="54" height="12" rx="6" fill="#475569"/>`) },
+  // Mercado
+  canasta: { t: 'mueble', w: 124, h: 96, es: 'Caja', en: 'Crate', fijo: true, pegado: true, fuente: true,
+    svg: e => { const c = CAT[e.de], p = PRECIOS[e.de] || 1; return svg(124, 96, `<rect x="4" y="22" width="116" height="58" rx="8" fill="${MADERA}"/><path d="M4 44 H120 M4 62 H120" stroke="${MADERA2}" stroke-width="4"/>${[22, 50, 78, 104].map((x, i) => `<text x="${x}" y="${30 - (i % 2) * 8}" font-size="30" text-anchor="middle">${c.emo}</text>`).join('')}<rect x="30" y="74" width="64" height="24" rx="12" fill="#fff" stroke="#f59e0b" stroke-width="3"/><text x="46" y="93" font-size="20" font-weight="900" text-anchor="middle" fill="#1f2937">${p}</text>${Array.from({ length: p }, (_, k) => `<circle cx="${62 + k * 7}" cy="86" r="4" fill="#facc15" stroke="#b45309" stroke-width="1.5"/>`).join('')}`); } },
+  mostrador: { t: 'mueble', w: 280, h: 130, es: 'Mostrador', en: 'Counter', sup: 130,
+    svg: () => svg(280, 130, `<rect x="0" y="0" width="280" height="22" rx="8" fill="#a16207"/><rect x="10" y="20" width="260" height="110" fill="#ca8a04"/><path d="M60 30 V125 M140 30 V125 M220 30 V125" stroke="#a16207" stroke-width="5"/>`) },
+  registradora: { t: 'mueble', w: 130, h: 96, es: 'Caja registradora', en: 'Cash register',
+    svg: () => svg(130, 96, `<rect x="30" y="0" width="70" height="30" rx="6" fill="#1f2937"/><rect x="38" y="6" width="54" height="18" rx="3" fill="#4ade80"/><text x="65" y="21" font-size="15" font-weight="900" text-anchor="middle" fill="#14532d">$</text><path d="M10 34 H120 L128 80 H2 Z" fill="#f97316"/>${[0, 1, 2, 3].map(r => [0, 1, 2, 3, 4].map(c => `<rect x="${22 + c * 18}" y="${40 + r * 9}" width="12" height="6" rx="2" fill="#fed7aa"/>`).join('')).join('')}<rect x="0" y="80" width="130" height="16" rx="5" fill="#c2410c"/>`) },
 };
+const PRECIOS = { manzana: 2, platano: 1, naranja: 2, fresa: 3, sandia: 5, uvas: 3, pina: 4, tomate: 1, cebolla: 1, papa: 1, zanahoria: 1, aguacate: 3, maiz: 2, lechuga: 1,
+                  pan: 2, galleta: 1, pastel: 5, tortilla: 1, leche: 3, queso: 4, huevo: 2, arroz: 2, frijoles: 2, chocolate: 3 };
+// Cocinar: en la estufa prendida (directo), en la olla sobre la estufa prendida, o en la licuadora
+const ESTUFA = { huevo: 'huevo_frito', papa: 'papas_fritas', maiz: 'palomitas' };
+const COMBOS_ESTUFA = [[['tortilla', 'queso'], 'quesadilla'], [['tortilla', 'frijoles'], 'taco'], [['tortilla', 'huevo_frito'], 'taco'], [['tortilla', 'aguacate'], 'taco']];
+function recetaOlla(d) {
+  const tiene = k => d.includes(k);
+  if (tiene('arroz') && tiene('leche')) return 'arroz_leche';
+  if (tiene('leche') && tiene('chocolate')) return 'chocolate_caliente';
+  if (tiene('arroz')) return 'arroz_cocido';
+  if (tiene('frijoles')) return 'frijoles_olla';
+  if (d.length === 1 && tiene('maiz')) return 'elote_asado';
+  return 'sopa';
+}
 for (const c of Object.values(CAT)) if (c.t === 'cosa') { c.w = 66; c.h = 66; }
-const DE_REFRI = ['manzana', 'platano', 'pan', 'leche', 'queso', 'sandia', 'zanahoria', 'galleta', 'pastel'];
+const DE_REFRI = ['manzana', 'platano', 'pan', 'leche', 'queso', 'sandia', 'zanahoria', 'galleta', 'pastel', 'huevo', 'tomate', 'tortilla', 'fresa'];
 const CAJON = ['cama', 'cuna', 'sofa', 'silla', 'mesa', 'lampara', 'tele', 'radio', 'librero', 'ropero', 'planta', 'alfombra', 'cuadro', 'repisa', 'espejo', 'tina', 'lavabo', 'refri', 'estufa',
+               'olla', 'licuadora', 'mostrador',
                'osito', 'pelota', 'globo', 'libro', 'biblia', 'flor', 'patito', 'guitarra', 'tambor'];
 const VERSICULOS = [['Dios es amor.', 'God is love.', '1 Juan 4:8'], ['El Señor es mi pastor.', 'The Lord is my shepherd.', 'Salmo 23:1'],
                     ['Dios cuida de ti.', 'God cares for you.', '1 Pedro 5:7'], ['Den gracias a Dios.', 'Give thanks to God.', 'Salmo 136:1']];
@@ -292,10 +379,28 @@ const ESCENAS = {
   mapa: { w: 1600, nombre: ['El pueblo', 'The town'] },
   casa: { w: 2400, nombre: ['La casa', 'The house'],
     cuartos: [{ x: 0, es: 'Recámara', en: 'Bedroom' }, { x: 600, es: 'Baño', en: 'Bathroom' }, { x: 1200, es: 'Cocina', en: 'Kitchen' }, { x: 1800, es: 'Sala', en: 'Living room' }] },
+  mercado: { w: 2300, nombre: ['El mercado', 'The market'] },
 };
+// Puestos del mercado: cada caja nunca se acaba (se arrastra lo que quieras) y tiene su precio en monedas
+const PUESTOS = [
+  { x: 60, es: 'Frutas', en: 'Fruits', emo: '🍎', col: '#ef4444', de: ['manzana', 'platano', 'naranja', 'fresa', 'sandia', 'uvas'] },
+  { x: 520, es: 'Verduras', en: 'Vegetables', emo: '🥕', col: '#16a34a', de: ['tomate', 'cebolla', 'papa', 'zanahoria', 'aguacate', 'maiz'] },
+  { x: 980, es: 'Panadería', en: 'Bakery', emo: '🍞', col: '#d97706', de: ['pan', 'galleta', 'pastel', 'tortilla'] },
+  { x: 1440, es: 'Abarrotes', en: 'Groceries', emo: '🥛', col: '#2563eb', de: ['leche', 'queso', 'huevo', 'arroz', 'frijoles', 'chocolate'] },
+];
+const ESTANTE = 470, MOSTRADOR_P = 620;
+ESCENAS.mercado.superficies = PUESTOS.map(p => ({ x0: p.x, x1: p.x + 420, y: MOSTRADOR_P }));   // los mostradores de los puestos
+function mercadoInicial(id) {
+  const ents = [];
+  PUESTOS.forEach(p => p.de.forEach((k, i) => ents.push({ id: id++, k: 'canasta', de: k, esc: 'mercado', x: p.x + 70 + (i % 3) * 140, y: i < 3 ? ESTANTE : MOSTRADOR_P })));
+  const mostrador = { id: id++, k: 'mostrador', esc: 'mercado', x: 2040, y: PISO };
+  ents.push(mostrador, { id: id++, k: 'registradora', esc: 'mercado', x: 2090, y: PISO - 130 },
+    { id: id++, k: 'per', esc: 'mercado', x: 2230, y: PISO, pose: 'parado', mira: -1, tam: 'adulto', piel: '#8d5524', pelo: 'chongo', colorPelo: '#111827', ropa: 'camisa', color: '#fbbf24', pantalon: '#7c2d12' });
+  return { ents, sigId: id };
+}
 const LUGARES = [
   { k: 'casa', x: 140, es: 'Casa', en: 'House', listo: true },
-  { k: 'mercado', x: 500, es: 'Mercado', en: 'Market' },
+  { k: 'mercado', x: 500, es: 'Mercado', en: 'Market', listo: true },
   { k: 'salon', x: 860, es: 'Salón', en: 'Salon' },
   { k: 'iglesia', x: 1220, es: 'Iglesia y parque', en: 'Church & park' },
 ];
@@ -308,17 +413,17 @@ function casaInicial() {
   const ents = [
     m('cama', 230), m('cuna', 500), m('lampara', 60), m('cuadro', 490, 330), m('alfombra', 300),
     m('tina', 790), m('lavabo', 1060), m('espejo', 1060, 430),
-    m('refri', 1290), m('estufa', 1450), m('mesa', 1660), m('silla', 1560), m('silla', 1760, PISO, { f: true }),
+    m('refri', 1285), m('estufa', 1460), m('mesa', 1680), m('silla', 1585), m('silla', 1778, PISO, { f: true }),
     m('sofa', 2015), m('tele', 2290), m('planta', 1850), m('alfombra', 2050), m('repisa', 2290, 420),
   ];
   const mesa = ents.find(e => e.k === 'mesa'), repisa = ents.find(e => e.k === 'repisa'), cama = ents.find(e => e.k === 'cama'), tina = ents.find(e => e.k === 'tina');
-  ents.push(m('manzana', 1620, PISO - 120), m('pan', 1700, PISO - 120), m('radio', 2250, 420 - 26), m('biblia', 2340, 420 - 26),
+  ents.push(m('manzana', 1625, PISO - 120), m('pan', 1735, PISO - 120), m('radio', 2250, 420 - 26), m('biblia', 2340, 420 - 26),
             m('osito', 340, PISO - 80), m('patito', 860, PISO - 100), m('pelota', 2200, PISO));
-  const sofa = ents.find(e => e.k === 'sofa'), cuna = ents.find(e => e.k === 'cuna');
+  const sofa = ents.find(e => e.k === 'sofa'), cuna = ents.find(e => e.k === 'cuna'), silla = ents.find(e => e.k === 'silla');
   // Una familia para empezar (en la etapa del salón se podrán crear y vestir más)
   ents.push(
     p(0, 0, { tam: 'adulto', piel: '#c68642', pelo: 'corto', colorPelo: '#1f1300', ropa: 'camisa', color: '#3b82f6', pantalon: '#1e3a8a' }, { asiento: { id: sofa.id, i: 0 } }),
-    p(1480, PISO, { tam: 'adulto', piel: '#e0ac69', pelo: 'largo', colorPelo: '#4a2511', ropa: 'vestido', color: '#ef4444', pantalon: '#e0ac69' }),
+    p(0, 0, { tam: 'adulto', piel: '#e0ac69', pelo: 'largo', colorPelo: '#4a2511', ropa: 'vestido', color: '#ef4444', pantalon: '#e0ac69' }, { asiento: { id: silla.id, i: 0 } }),
     p(380, PISO, { tam: 'nino', piel: '#e0ac69', pelo: 'coletas', colorPelo: '#4a2511', ropa: 'vestido', color: '#ec4899', pantalon: '#e0ac69' }),
     p(2120, PISO, { tam: 'nino', piel: '#c68642', pelo: 'corto', colorPelo: '#1f1300', ropa: 'camisa', color: '#22c55e', pantalon: '#1e40af' }),
     p(0, 0, { tam: 'bebe', piel: '#e0ac69', pelo: 'bebe', colorPelo: '#4a2511', ropa: 'camisa', color: '#fde047', pantalon: '#fde047' }, { asiento: { id: cuna.id, i: 0 } }),
@@ -328,6 +433,16 @@ function casaInicial() {
 const DEF = () => ({ idioma: 'ambos', noche: false, esc: 'mapa', cam: {}, bolsillo: [],
   colores: { casa: { pared: ['#fde2e4', '#d1fae5', '#fef3c7', '#e0e7ff'], piso: ['#c08457', '#cbd5e1', '#d6a77a', '#b98b5e'] } }, ...casaInicial() });
 try { E = JSON.parse(localStorage.getItem('pueblito.estado')) || DEF(); } catch { E = DEF(); }
+// Partidas de la etapa 1: agregar el mercado y los utensilios de la cocina
+function migrar() {
+  if (!E.ents.some(e => e.esc === 'mercado')) { const m = mercadoInicial(E.sigId); E.ents.push(...m.ents); E.sigId = m.sigId; }
+  if (!E.ents.some(e => e.k === 'olla')) {
+    const estufa = E.ents.find(e => e.k === 'estufa' && e.esc === 'casa'), mesa = E.ents.find(e => e.k === 'mesa' && e.esc === 'casa');
+    if (estufa) E.ents.push({ id: E.sigId++, k: 'olla', esc: 'casa', x: estufa.x + 52, y: estufa.y - CAT.estufa.sup, dentro: [] });
+    if (mesa) E.ents.push({ id: E.sigId++, k: 'licuadora', esc: 'casa', x: mesa.x - 5, y: mesa.y - CAT.mesa.sup, dentro: [] });
+  }
+}
+migrar();
 let tGuardar;
 function guardar() { clearTimeout(tGuardar); tGuardar = setTimeout(() => { try { localStorage.setItem('pueblito.estado', JSON.stringify(E)); } catch {} }, 300); }
 const ent = id => E.ents.find(e => e.id === id);
@@ -361,7 +476,8 @@ function construir() {
   document.body.classList.toggle('enMapa', E.esc === 'mapa');
   ['bMuebles', 'bPintar'].forEach(id => $(id).style.display = E.esc === 'mapa' ? 'none' : '');
   cerrarCajones();
-  if (E.esc === 'mapa') construirMapa(); else construirCasa();
+  if (E.esc === 'mapa') construirMapa(); else if (E.esc === 'mercado') construirMercado(); else construirCasa();
+  $('bPintar').style.display = E.esc === 'casa' ? '' : 'none';
   const oscuro = document.createElement('div'); oscuro.id = 'oscuro'; lienzo.appendChild(oscuro);
   lienzo.classList.toggle('noche', E.noche);
   for (const e of enEscena()) crearElem(e);
@@ -386,6 +502,24 @@ function construirCasa() {
       <div class="nombreCuarto">${T(c.es, c.en)}</div></div>`);
     if (i) f.insertAdjacentHTML('beforeend', `<div class="divisor" style="left:${c.x - 14}px"></div>`);
   });
+  lienzo.appendChild(f);
+}
+function construirMercado() {
+  const f = document.createElement('div'); f.className = 'fondo';
+  let s = `<rect width="2300" height="760" fill="#fff7ed"/><rect y="0" width="2300" height="90" fill="#fde68a"/>
+    <rect y="760" width="2300" height="140" fill="#e7e5e4"/>${Array.from({ length: 24 }, (_, k) => `<rect x="${k * 100}" y="760" width="50" height="70" fill="#d6d3d1"/><rect x="${k * 100 + 50}" y="830" width="50" height="70" fill="#d6d3d1"/>`).join('')}`;
+  for (const p of PUESTOS) {
+    const x = p.x, w = 420;
+    s += `<rect x="${x + 10}" y="230" width="14" height="530" fill="#92400e"/><rect x="${x + w - 24}" y="230" width="14" height="530" fill="#92400e"/>
+      ${Array.from({ length: 7 }, (_, k) => `<path d="M${x + k * 60} 150 h60 l-6 80 q-24 18 -48 0 Z" fill="${k % 2 ? '#fff' : p.col}"/>`).join('')}
+      <rect x="${x + 110}" y="96" width="200" height="56" rx="14" fill="#fff" stroke="${p.col}" stroke-width="5"/>
+      <text x="${x + 145}" y="138" font-size="36" text-anchor="middle">${p.emo}</text><text x="${x + 232}" y="134" font-size="26" font-weight="900" text-anchor="middle" fill="#1f2937">${T(p.es, p.en).split(' · ')[0]}</text>
+      <rect x="${x + 4}" y="${ESTANTE}" width="${w - 8}" height="16" rx="5" fill="#b45309"/>
+      <rect x="${x}" y="${MOSTRADOR_P}" width="${w}" height="${PISO - MOSTRADOR_P}" fill="${MADERA}"/><rect x="${x}" y="${MOSTRADOR_P}" width="${w}" height="18" fill="${MADERA2}"/>
+      <path d="M${x + 20} ${MOSTRADOR_P + 50} H${x + w - 20} M${x + 20} ${MOSTRADOR_P + 95} H${x + w - 20}" stroke="${MADERA2}" stroke-width="5"/>`;
+  }
+  s += `<rect x="1900" y="96" width="290" height="56" rx="14" fill="#fff" stroke="#f97316" stroke-width="5"/><text x="2045" y="134" font-size="28" font-weight="900" text-anchor="middle" fill="#1f2937">💰 ${T('Caja', 'Checkout').split(' · ')[0]}</text>`;
+  f.innerHTML = svg(2300, 900, s);
   lienzo.appendChild(f);
 }
 function construirMapa() {
@@ -423,7 +557,7 @@ function irA(k) { E.cam[E.esc] = camX; E.esc = k; guardar(); construir(); di(...
 function zDe(e) {
   if (e.k === 'per') return 40 + Math.round(e.y / 100);
   const c = CAT[e.k];
-  return c.piso ? 2 : c.pegado ? 4 : c.frente ? 46 : c.t === 'cosa' ? 48 : 10;
+  return c.piso ? 2 : c.pegado ? 4 : c.frente ? 46 : c.t === 'cosa' ? 48 : c.contenedor ? 12 : 10;
 }
 function crearElem(e) {
   const el = document.createElement('div');
@@ -494,6 +628,7 @@ function burbuja(e, emo) {
 // ---------- Caer: cada cosa baja hasta el piso o el mueble que tenga abajo ----------
 function superficieBajo(e, x, y) {
   let mejor = PISO, sobre = null;
+  for (const s of ESCENAS[E.esc].superficies || []) if (x > s.x0 && x < s.x1 && s.y >= y - 40 && s.y < mejor) mejor = s.y;
   for (const o of enEscena()) {
     if (o === e || o.k === 'per' || o.dueno) continue;
     const c = CAT[o.k]; if (!c.sup) continue;
@@ -532,15 +667,17 @@ function soltarEn(e, x, y) {
   if (c?.pegado) { e.y = lim(y, c.h + 60, PISO - 120); colocar(e); sfx.click(); guardar(); return; }
   if (c?.flota) {   // el globo sube hasta el techo
     e.y = lim(y, c.h + 10, PISO); colocar(e);
-    requestAnimationFrame(() => { el.classList.add('flota'); e.y = c.h + 20 + azar(60); colocar(e); setTimeout(() => el.classList.remove('flota'), 2600); });
+    e.y = c.h + 20 + azar(60);   // el estado ya queda arriba; la animación solo lo muestra subir
+    requestAnimationFrame(() => { el.classList.add('flota'); colocar(e); setTimeout(() => el.classList.remove('flota'), 2600); });
     guardar(); return;
   }
   const destino = superficieBajo(e, e.x, y);
   e.y = Math.min(y, destino.y); colocar(e);
   const caida = destino.y - e.y;
+  e.y = destino.y;   // el estado ya queda abajo; la animación solo lo muestra caer
   requestAnimationFrame(() => {
     el.style.setProperty('--t', Math.max(0.12, Math.sqrt(caida / 900)) + 's');
-    el.classList.add('cae'); e.y = destino.y; colocar(e);
+    el.classList.add('cae'); colocar(e);
     setTimeout(() => {
       el.classList.remove('cae'); el.classList.remove('aplasta'); void el.offsetWidth; el.classList.add('aplasta');
       if (caida > 20) sfx.caer();
@@ -569,13 +706,17 @@ function tocar(e) {
     if (e.on) di(c.es, c.en);
     guardar(); return;
   }
+  if (e.k === 'canasta') { const k = CAT[e.de], p = PRECIOS[e.de]; sfx.pop(); burbuja(e, k.emo); di(`${k.es}: ${p} ${p === 1 ? 'moneda' : 'monedas'}`, `${k.en}: ${p} ${p === 1 ? 'coin' : 'coins'}`); return; }
+  if (e.k === 'registradora') { cobrar(e); return; }
+  if (e.k === 'licuadora') { licuar(e); return; }
+  if (e.k === 'olla') { sfx.pop(); di((e.dentro || []).length ? 'Ponla en la estufa prendida.' : 'Échale ingredientes.', (e.dentro || []).length ? 'Put it on the hot stove.' : 'Add some ingredients.'); return; }
   if (e.k === 'lavabo') { sfx.agua(); burbuja(e, '💧'); di(c.es, c.en); return; }
   if (e.k === 'tina') { sfx.agua(); burbuja(e, '🫧'); di(c.es, c.en); return; }
   if (e.k === 'guitarra') { [262, 330, 392, 523].forEach((f, i) => tono(f, i * 0.04, 0.8, 'triangle', 0.08)); burbuja(e, '🎵'); return; }
   if (e.k === 'tambor') { tono(110, 0, 0.2, 'triangle', 0.25); tono(70, 0, 0.25, 'sine', 0.25); burbuja(e, '🥁'); return; }
   if (e.k === 'pelota' || e.k === 'osito' || e.k === 'patito') { el.classList.remove('brinca'); void el.offsetWidth; el.classList.add('brinca'); sfx.pop(); }
   else sfx.pop();
-  di(c.es, c.en);
+  di(...(e.n || [c.es, c.en]));
 }
 function sacarDelRefri(r) {   // al abrir el refri sale algo de comer
   const comida = enEscena().filter(e => CAT[e.k]?.comida).length;
@@ -585,6 +726,110 @@ function sacarDelRefri(r) {   // al abrir el refri sale algo de comer
   E.ents.push(n); crearElem(n); soltarEn(n, n.x, n.y);
   setTimeout(() => di(CAT[k].es, CAT[k].en), 400);
 }
+
+// ---------- Cocinar ----------
+function utensilioEn(x, y, menos) {
+  // solo atrapa lo que se suelta en la boca de la olla o la licuadora (así lo demás puede ir junto, en la estufa o la mesa)
+  return enEscena().find(o => o !== menos && CAT[o.k]?.contenedor && Math.abs(o.x - x) < CAT[o.k].w / 2 - 5 && y > o.y - CAT[o.k].h - 70 && y < o.y - CAT[o.k].h * 0.35);
+}
+function echarA(u, cosa) {
+  u.dentro ||= [];
+  if (u.dentro.length >= 4) { di('¡Ya está llena!', "It's full!"); soltarEn(cosa, cosa.x + 60, cosa.y); return; }
+  u.dentro.push(cosa.k);
+  E.ents = E.ents.filter(o => o !== cosa); elems.get(cosa.id)?.remove(); elems.delete(cosa.id);
+  dibujarElem(u); colocar(u);
+  tono(600, 0, 0.08, 'sine', 0.12); tono(400, 0.06, 0.1, 'sine', 0.1);
+  di(CAT[cosa.k].es, CAT[cosa.k].en); guardar();
+}
+function nuevoPlatillo(k, x, y, nombre) {
+  const n = { id: E.sigId++, k, esc: E.esc, x, y };
+  if (nombre) n.n = nombre;
+  E.ents.push(n); crearElem(n); soltarEn(n, x, y);
+  burbuja(n, '✨'); [784, 988, 1175].forEach((f, i) => tono(f, 0.1 + i * 0.1, 0.2, 'triangle', 0.12));
+  setTimeout(() => di(...(nombre || [CAT[k].es, CAT[k].en])), 300);
+  return n;
+}
+const estufaPrendida = e => { const s = e.sobre && ent(e.sobre.id); return s && s.k === 'estufa' && s.on; };
+function cocinarTick() {
+  const dt = 0.25;
+  for (const est of enEscena().filter(o => o.k === 'estufa' && o.on)) {   // tortilla + algo en la estufa = taco o quesadilla
+    const arriba = enEscena().filter(o => o.sobre?.id === est.id && CAT[o.k]?.t === 'cosa' && !o.dueno);
+    for (const [ing, res] of COMBOS_ESTUFA) {
+      const a = arriba.find(o => o.k === ing[0]), b = arriba.find(o => o.k === ing[1]);
+      if (!a || !b) continue;
+      for (const o of [a, b]) { E.ents = E.ents.filter(x => x !== o); elems.get(o.id)?.remove(); elems.delete(o.id); }
+      nuevoPlatillo(res, (a.x + b.x) / 2, est.y - CAT.estufa.sup - 60); guardar(); return;
+    }
+  }
+  for (const e of enEscena()) {
+    if (e.k === 'olla') {
+      const cocina = estufaPrendida(e) && (e.dentro || []).length;
+      elems.get(e.id)?.classList.toggle('cocinando', !!cocina);
+      if (!cocina) { e.coc = 0; continue; }
+      e.coc = (e.coc || 0) + dt;
+      if (Math.random() < 0.4) tono(200 + Math.random() * 300, 0, 0.06, 'sine', 0.04);   // burbujas
+      if (e.coc < 3) continue;
+      const r = recetaOlla(e.dentro); e.dentro = []; e.coc = 0; dibujarElem(e); colocar(e);
+      nuevoPlatillo(r, e.x + (e.x > ent(e.sobre.id).x ? -80 : 80), e.y - 80); guardar();
+    } else if (ESTUFA[e.k] && estufaPrendida(e) && !e.dueno) {   // directo en la estufa: huevo frito, papas, palomitas
+      e.coc = (e.coc || 0) + dt;
+      if (Math.random() < 0.5) tono(3000 + Math.random() * 2000, 0, 0.03, 'square', 0.015);   // chisporroteo
+      if (e.coc < 2.5) continue;
+      e.k = ESTUFA[e.k]; e.coc = 0; dibujarElem(e); colocar(e);
+      burbuja(e, '✨'); [784, 988, 1175].forEach((f, i) => tono(f, i * 0.1, 0.2, 'triangle', 0.12));
+      di(CAT[e.k].es, CAT[e.k].en); guardar();
+    } else if (e.coc) e.coc = 0;
+  }
+}
+setInterval(cocinarTick, 250);
+function licuar(u) {
+  const d = u.dentro || [];
+  if (!d.length) { sfx.pop(); di('Échale fruta y leche.', 'Add fruit and milk.'); return; }
+  const el = elems.get(u.id); el.classList.add('licuando');
+  for (let k = 0; k < 14; k++) tono(140 + (k % 2) * 30, k * 0.1, 0.12, 'sawtooth', 0.04);
+  setTimeout(() => {
+    el.classList.remove('licuando');
+    const fruta = d.find(k => CAT[k].fruta) || d.find(k => k !== 'leche'), conLeche = d.includes('leche');
+    const k = conLeche ? 'licuado' : 'jugo', base = CAT[k];
+    const nombre = fruta ? [`${base.es} de ${CAT[fruta].es.toLowerCase()}`, `${CAT[fruta].en} ${base.en.toLowerCase()}`] : null;
+    u.dentro = []; dibujarElem(u); colocar(u);
+    nuevoPlatillo(k, u.x + 80, u.y - 60, nombre); guardar();
+  }, 1500);
+}
+
+// ---------- La caja del mercado: cobrar moneda por moneda (para contar) ----------
+let cobro = null;
+function cobrar(reg) {
+  const m = ent(reg.sobre?.id) || enEscena().find(o => o.k === 'mostrador');
+  const cosas = m ? enEscena().filter(o => o.sobre?.id === m.id && CAT[o.k]?.t === 'cosa').slice(0, 5) : [];
+  if (!cosas.length) { sfx.pop(); di('Pon en el mostrador lo que quieres comprar.', 'Put what you want to buy on the counter.'); return; }
+  const total = cosas.reduce((s, o) => s + (PRECIOS[o.k] || 2), 0);
+  cobro = { cosas, total, pagado: 0 };
+  $('cobroCosas').innerHTML = cosas.map(o => `<span class="cosaCobro"><span>${CAT[o.k].emo}</span><b>${PRECIOS[o.k] || 2}</b></span>`).join('<span class="mas">+</span>');
+  $('cobroTotal').innerHTML = `<span>${total}</span><small>🪙 ${T('monedas', 'coins')}</small>`;
+  $('cobroBandeja').innerHTML = '';
+  $('cobroMoneda').disabled = false;
+  $('cobro').classList.add('abierta'); sfx.click();
+  decirCobro();
+}
+const decirCobro = () => di(`Son ${cobro.total} ${cobro.total === 1 ? 'moneda' : 'monedas'}. ¡Paga una por una!`, `That's ${cobro.total} ${cobro.total === 1 ? 'coin' : 'coins'}. Pay one at a time!`);
+$('cobroOir').onclick = () => cobro && decirCobro();
+$('cobroMoneda').onclick = () => {
+  if (!cobro || cobro.pagado >= cobro.total) return;
+  cobro.pagado++;
+  $('cobroBandeja').insertAdjacentHTML('beforeend', `<span class="monedaPuesta">${cobro.pagado}</span>`);
+  tono(1400, 0, 0.06, 'square', 0.05); tono(2100, 0.04, 0.08, 'sine', 0.08);
+  decir([{ l: E.idioma === 'en' ? 'en' : 'es', t: String(cobro.pagado) }]);
+  if (cobro.pagado < cobro.total) return;
+  $('cobroMoneda').disabled = true;
+  setTimeout(() => {
+    [523, 659, 784, 1047, 1319].forEach((f, i) => tono(f, i * 0.07, 0.2, 'triangle', 0.13));   // ¡cha-ching!
+    di(`¡Gracias! Pagaste ${cobro.total}.`, `Thank you! You paid ${cobro.total}.`);
+    for (const o of cobro.cosas) burbuja(o, '🛍️');
+  }, 500);
+  setTimeout(() => { $('cobro').classList.remove('abierta'); cobro = null; }, 2600);
+};
+$('cobroListo').onclick = () => { $('cobro').classList.remove('abierta'); cobro = null; };
 
 // ---------- Dar cosas a los personajes: comer o tomarlas con la mano ----------
 function personajeEn(x, y, menos) {
@@ -625,7 +870,7 @@ function inicioToque(e) {
   if (elEnt) {
     const en = ent(+elEnt.dataset.id); if (!en) return;
     const [mx, my] = aMundo(e.clientX, e.clientY);
-    toque = { id: en.id, x0: e.clientX, y0: e.clientY, dx: mx - en.x, dy: my - en.y, arrastrando: false };
+    toque = { id: en.id, x0: e.clientX, y0: e.clientY, dx: mx - en.x, dy: my - en.y, arrastrando: false, fijo: !!CATde(en)?.fijo };
   } else toque = { pan: true, x0: e.clientX, cam0: camX };
   try { vista.setPointerCapture(e.pointerId); } catch {}
 }
@@ -643,6 +888,15 @@ function movToque(e) {
   ultimoPuntero = [e.clientX, e.clientY];
   if (toque.pan) { camX = toque.cam0 - (e.clientX - toque.x0) / S; aplicarCam(); return; }
   const en = ent(toque.id); if (!en) return;
+  if (!toque.arrastrando && toque.fijo) {   // lo fijo no se mueve: de una caja del mercado sale uno nuevo; si no, se desliza el lugar
+    if (Math.hypot(e.clientX - toque.x0, e.clientY - toque.y0) < 10) return;
+    if (!CAT[en.k].fuente) { toque = { pan: true, x0: toque.x0, cam0: camX }; return; }
+    const [mx, my] = aMundo(e.clientX, e.clientY);
+    const n = { id: E.sigId++, k: en.de, esc: E.esc, x: mx, y: my + 33 };
+    E.ents.push(n); crearElem(n); colocar(n);
+    toque = { id: n.id, x0: toque.x0, y0: toque.y0, dx: 0, dy: -33, arrastrando: false };
+    levantar(n); moverArrastre(); return;
+  }
   if (!toque.arrastrando) { if (Math.hypot(e.clientX - toque.x0, e.clientY - toque.y0) < 10) return; levantar(en); }
   moverArrastre();
 }
@@ -668,6 +922,10 @@ function finToque() {
   const [mx, my] = aMundo(...ultimoPuntero);
   if (ultimoPuntero[1] > innerHeight - 84) { aMochila(en); return; }
   if (en.k !== 'per' && ultimoEnBasura) { borrar(en); return; }
+  if (CAT[en.k]?.t === 'cosa' && CAT[en.k].comida) {   // ingredientes a la olla o a la licuadora
+    const u = utensilioEn(mx, my, en);
+    if (u) { echarA(u, en); return; }
+  }
   if (en.k !== 'per') { const p = personajeEn(mx, my, null); if (p && CAT[en.k].t === 'cosa') { darA(p, en); return; } }
   soltarEn(en, en.x, en.y);
 }
@@ -803,7 +1061,7 @@ function abrirPanel() {
 $('bCerrarPanel').onclick = () => { $('panel').classList.remove('abierta'); construir(); };
 $('bReiniciar').onclick = () => {
   if (!confirm('¿Borrar la casa, los muebles y los personajes y empezar de nuevo? Esto no se puede deshacer.')) return;
-  const idioma = E.idioma; E = DEF(); E.idioma = idioma; guardar(); $('panel').classList.remove('abierta'); construir();
+  const idioma = E.idioma; E = DEF(); E.idioma = idioma; migrar(); guardar(); $('panel').classList.remove('abierta'); construir();
 };
 
 construir(); pintarNoche();

@@ -3,7 +3,9 @@
 Un pueblito para jugar libremente, sin reglas ni metas, al estilo de los juegos de "casita": arrastras a los personajes y las cosas con el dedo e inventas tus propias historias. Bilingüe (español / English). Sin anuncios, sin chat y sin internet.
 
 ## Cómo se juega
-- **🗺️ El pueblo:** toca un lugar para entrar. Por ahora está abierta la **Casa**; el mercado, el salón y la iglesia con el parque vienen pronto.
+- **🗺️ El pueblo:** toca un lugar para entrar. Están abiertos la **Casa** y el **Mercado**; el salón y la iglesia con el parque vienen pronto.
+- **🛒 El mercado:** 4 puestos (frutas, verduras, panadería y abarrotes). Arrastra lo que quieras de cada caja: nunca se acaban. Cada caja tiene su precio con número y monedas 🪙. Pon tus cosas en el mostrador de la **caja** y toca la caja registradora: se paga **moneda por moneda**, contando en voz alta, hasta llegar al total.
+- **🍳 La cocina:** prende la estufa y cocina directo en ella (huevo → huevo frito, papa → papas fritas, elote → palomitas; tortilla + queso → quesadilla; tortilla + frijoles, huevo frito o aguacate → taco). Echa ingredientes en la **olla** y ponla en la estufa prendida (arroz, frijoles de la olla, sopa de verduras, arroz con leche, chocolate caliente). En la **licuadora**: fruta → jugo, fruta + leche → licuado. Luego dales de comer a los personajes.
 - **👪 Personajes:** arrástralos con el dedo. Si los sueltas en una silla o en el sofá, se sientan; en la cama o la cuna, se acuestan; en la tina, se bañan 🫧. Tócalos y se ríen.
 - **🍎 Cosas:** arrástralas a la mano de un personaje para que las tome, o a su boca para que se las coma en tres mordidas. Las cosas caen al piso o se quedan encima de las mesas y repisas, y se mueven con el mueble.
 - **Tocar** cada cosa dice su nombre (en español, en inglés o en los dos). La lámpara, la tele, la radio, la estufa, el refrigerador (¡saca comida!), el ropero, el lavabo y la tina hacen algo al tocarlos. La Biblia 📖 lee un versículo corto.
