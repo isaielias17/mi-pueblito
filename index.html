@@ -102,6 +102,15 @@
   .btn { background: #f1f5f9; border-radius: 999px; padding: 10px 16px; font-weight: 700; }
   .btn.principal { background: #1f2937; color: #fff; }
   .btn.peligro { background: #fee2e2; color: #b91c1c; }
+  .panelAbajo { position: fixed; left: 8px; right: 8px; bottom: 92px; z-index: 32; background: #fffffff5; border-radius: 22px; padding: 10px 52px 10px 10px; box-shadow: 0 6px 0 #0002; display: none; flex-direction: column; gap: 8px; }
+  .panelAbajo.abierto { display: flex; }
+  .filaPanel { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; align-items: center; }
+  .filaPanel button { flex: none; width: 64px; height: 64px; border-radius: 16px; background: #f1f5f9; display: grid; place-items: center; overflow: hidden; padding: 0; }
+  .filaPanel button svg { width: 60px; height: 60px; }
+  .filaPanel button.sel { outline: 4px solid #22c55e; background: #dcfce7; }
+  .filaPanel button.color { border-radius: 50%; width: 48px; height: 48px; border: 4px solid #fff; box-shadow: 0 2px 0 #0003; }
+  .cerrarPanel { position: absolute; right: 8px; top: 8px; width: 40px; height: 40px; border-radius: 50%; background: #f1f5f9; font-size: 18px; }
+  #creaListo { align-self: center; background: #7c3aed; color: #fff; font-size: 26px; font-weight: 900; border-radius: 999px; padding: 8px 28px; box-shadow: 0 5px 0 #4c1d95; }
   .vapor { display: none; }
   .cocinando .vapor { display: inline; animation: vapor 1s ease-in-out infinite; }
   @keyframes vapor { 50% { opacity: .5; transform: translateY(-6px); } }
@@ -142,6 +151,18 @@
 <div id="basura">🗑️</div>
 <div id="cajon"></div>
 <div id="paleta"></div>
+<div id="estilista" class="panelAbajo">
+  <div class="filaPanel" id="estPelo"></div>
+  <div class="filaPanel" id="estColor"></div>
+  <div class="filaPanel" id="estAcc"></div>
+  <button class="cerrarPanel" id="estCerrar">✖️</button>
+</div>
+<div id="creador" class="panelAbajo">
+  <div class="filaPanel" id="creaTam"></div>
+  <div class="filaPanel" id="creaPiel"></div>
+  <button id="creaListo">✨ 👤</button>
+  <button class="cerrarPanel" id="creaCerrar">✖️</button>
+</div>
 <footer id="bolsillo"><span class="lbl">🎒</span><div id="ranuras"></div></footer>
 
 <div id="panel" class="capa"><div class="tarjeta">
@@ -149,6 +170,7 @@
   <h3>Idioma / Language</h3>
   <div id="pIdioma"></div>
   <p style="color:#64748b;font-size:14px">Al tocar cada cosa, el juego dice su nombre en el idioma elegido. Todo se guarda solo en este aparato.</p>
+  <button class="btn" id="bBorrarNuevos">Borrar los personajes creados en la cabina</button>
   <button class="btn peligro" id="bReiniciar">Empezar de nuevo (borrar la casa)</button>
   <button class="btn principal" id="bCerrarPanel">Listo 🔒</button>
 </div></div>
@@ -228,12 +250,24 @@ function peloFrente(estilo, c) {
   if (estilo === 'rizado') { let s = ''; for (let a = 200; a <= 340; a += 20) { const r = a * Math.PI / 180; s += `<circle cx="${60 + Math.cos(r) * 32}" cy="${50 + Math.sin(r) * 32}" r="12" fill="${c}"/>`; } return s; }
   if (estilo === 'chongo') return `<circle cx="60" cy="12" r="13" fill="${c}"/>` + gorra;
   if (estilo === 'coletas') return gorra + `<circle cx="20" cy="44" r="13" fill="${c}"/><circle cx="100" cy="44" r="13" fill="${c}"/><circle cx="29" cy="40" r="4" fill="#f472b6"/><circle cx="91" cy="40" r="4" fill="#f472b6"/>`;
+  if (estilo === 'trenza') return gorra + [0, 1, 2, 3, 4].map(k => `<ellipse cx="${94 - k}" cy="${58 + k * 14}" rx="9" ry="8" fill="${c}"/>`).join('') + `<circle cx="90" cy="128" r="4" fill="#f472b6"/>`;
+  if (estilo === 'afro') return `<path d="M24 46 Q30 22 60 20 Q90 22 96 46 Q86 34 60 32 Q34 34 24 46 Z" fill="${c}"/>`;
+  if (estilo === 'cresta') return `<path d="M44 26 L50 0 L56 22 L62 -4 L68 22 L76 4 L78 30 Q60 22 44 26 Z" fill="${c}"/>`;
   return gorra;
+}
+function accesorio(a, c) {   // se dibuja encima de la cabeza
+  if (a === 'lentes') return `<g fill="#ffffff55" stroke="${c}" stroke-width="3.5"><circle cx="48" cy="52" r="10"/><circle cx="72" cy="52" r="10"/></g><path d="M58 51 h4 M38 50 L26 46 M82 50 L94 46" stroke="${c}" stroke-width="3.5"/>`;
+  if (a === 'gorra') return `<path d="M26 40 Q28 10 60 10 Q92 10 94 40 Z" fill="${c}"/><path d="M60 38 H112 Q108 46 94 46 H60 Z" fill="${c}" opacity=".85"/><circle cx="60" cy="10" r="5" fill="#fff"/>`;
+  if (a === 'mono') return `<path d="M76 20 L60 10 L62 32 Z M76 20 L94 8 L92 32 Z" fill="${c}"/><circle cx="77" cy="20" r="6" fill="${c}" stroke="#fff" stroke-width="2"/>`;
+  if (a === 'corona') return `<path d="M34 24 L36 4 L48 16 L60 0 L72 16 L84 4 L86 24 Z" fill="#facc15" stroke="#b45309" stroke-width="2"/><circle cx="60" cy="14" r="4" fill="${c}"/><circle cx="46" cy="18" r="3" fill="${c}"/><circle cx="74" cy="18" r="3" fill="${c}"/>`;
+  if (a === 'flor') return [0, 72, 144, 216, 288].map(g => { const r = g * Math.PI / 180; return `<circle cx="${88 + Math.cos(r) * 7}" cy="${26 + Math.sin(r) * 7}" r="6" fill="${c}"/>`; }).join('') + `<circle cx="88" cy="26" r="5" fill="#facc15"/>`;
+  return '';
 }
 function svgPersonaje(p) {
   const sentado = p.pose === 'sentado', dormido = p.pose === 'acostado', H = p.colorPelo;
   let s = '';
   if (p.pelo === 'largo') s += `<path d="M24 50 Q18 118 34 128 L86 128 Q102 118 96 50 Z" fill="${H}"/>`;
+  if (p.pelo === 'afro') s += `<circle cx="60" cy="44" r="48" fill="${H}"/>`;
   if (sentado) s += `<rect x="40" y="148" width="58" height="20" rx="9" fill="${p.pantalon}"/><rect x="80" y="150" width="18" height="78" rx="8" fill="${p.pantalon}"/><ellipse cx="95" cy="231" rx="14" ry="7" fill="#374151"/>`;
   else s += `<rect x="42" y="156" width="16" height="72" rx="7" fill="${p.pantalon}"/><rect x="62" y="156" width="16" height="72" rx="7" fill="${p.pantalon}"/><ellipse cx="50" cy="231" rx="12" ry="6" fill="#374151"/><ellipse cx="70" cy="231" rx="12" ry="6" fill="#374151"/>`;
   s += p.ropa === 'vestido' ? `<path d="M36 94 Q60 86 84 94 L98 ${sentado ? 168 : 186} L22 ${sentado ? 168 : 186} Z" fill="${p.color}"/>` : `<rect x="32" y="90" width="56" height="76" rx="18" fill="${p.color}"/>`;
@@ -244,6 +278,7 @@ function svgPersonaje(p) {
   s += `<circle cx="40" cy="64" r="5" fill="#f87171" opacity=".35"/><circle cx="80" cy="64" r="5" fill="#f87171" opacity=".35"/>`;
   s += `<path class="boca" d="M50 67 Q60 76 70 67" stroke="#7f1d1d" stroke-width="3" fill="none" stroke-linecap="round"/><ellipse class="bocaAbierta" cx="60" cy="71" rx="6" ry="7" fill="#7f1d1d"/>`;
   s += peloFrente(p.pelo, H);
+  if (p.acc) s += accesorio(p.acc, p.accCol || '#ec4899');
   return svg(120, 240, s);
 }
 const CAT = {
@@ -349,7 +384,31 @@ const CAT = {
     svg: () => svg(280, 130, `<rect x="0" y="0" width="280" height="22" rx="8" fill="#a16207"/><rect x="10" y="20" width="260" height="110" fill="#ca8a04"/><path d="M60 30 V125 M140 30 V125 M220 30 V125" stroke="#a16207" stroke-width="5"/>`) },
   registradora: { t: 'mueble', w: 130, h: 96, es: 'Caja registradora', en: 'Cash register',
     svg: () => svg(130, 96, `<rect x="30" y="0" width="70" height="30" rx="6" fill="#1f2937"/><rect x="38" y="6" width="54" height="18" rx="3" fill="#4ade80"/><text x="65" y="21" font-size="15" font-weight="900" text-anchor="middle" fill="#14532d">$</text><path d="M10 34 H120 L128 80 H2 Z" fill="#f97316"/>${[0, 1, 2, 3].map(r => [0, 1, 2, 3, 4].map(c => `<rect x="${22 + c * 18}" y="${40 + r * 9}" width="12" height="6" rx="2" fill="#fed7aa"/>`).join('')).join('')}<rect x="0" y="80" width="130" height="16" rx="5" fill="#c2410c"/>`) },
+  // Salón y tienda de ropa
+  silla_salon: { t: 'mueble', w: 130, h: 190, es: 'Sillón del salón', en: 'Salon chair', asientos: [{ dx: 4, dy: 0, pose: 'sentado' }], estilista: true,
+    svg: () => svg(130, 190, `<rect x="6" y="0" width="30" height="110" rx="14" fill="#ec4899"/><rect x="6" y="84" width="118" height="28" rx="12" fill="#f472b6"/><rect x="100" y="70" width="26" height="16" rx="8" fill="#db2777"/><rect x="58" y="110" width="14" height="60" fill="#94a3b8"/><ellipse cx="65" cy="180" rx="50" ry="10" fill="#64748b"/>`) },
+  cabina: { t: 'mueble', w: 230, h: 360, es: 'Cabina de personajes nuevos', en: 'New character booth', fijo: true,
+    svg: () => svg(230, 360, `<rect x="0" y="40" width="230" height="320" rx="16" fill="#7c3aed"/><rect x="20" y="70" width="190" height="290" fill="#ede9fe"/><path d="M20 70 Q60 140 30 360 H20 Z M210 70 Q170 140 200 360 H210 Z" fill="#a855f7"/><rect x="10" y="0" width="210" height="56" rx="16" fill="#facc15"/><text x="115" y="38" font-size="30" font-weight="900" text-anchor="middle" fill="#7c2d12">✨ + 👤 ✨</text><text x="115" y="230" font-size="70" text-anchor="middle" opacity=".5">✨</text>`) },
+  percha: { t: 'mueble', w: 76, h: 96, es: 'Ropa', en: 'Clothes', fijo: true, pegado: true, fuente: true,
+    svg: e => { const tipo = CAT[e.de].prenda, colgada = ['camisa', 'vestido', 'pantalon'].includes(tipo);   // los accesorios van en la mesa, sin gancho
+      return svg(76, 96, colgada ? `<path d="M38 2 q8 0 8 8 q0 6 -8 8 L4 30 H72 L38 18" fill="none" stroke="#475569" stroke-width="3"/><g transform="translate(6 26) scale(.64)">${dibujoPrenda(tipo, e.color)}</g>`
+                                 : `<g transform="translate(-4 4) scale(.95)">${dibujoPrenda(tipo, e.color)}</g>`); } },
+  p_camisa: { t: 'cosa', prenda: 'camisa', es: 'Camisa', en: 'Shirt' },
+  p_vestido: { t: 'cosa', prenda: 'vestido', es: 'Vestido', en: 'Dress' },
+  p_pantalon: { t: 'cosa', prenda: 'pantalon', es: 'Pantalón', en: 'Pants' },
+  p_gorra: { t: 'cosa', prenda: 'gorra', es: 'Gorra', en: 'Cap' },
+  p_lentes: { t: 'cosa', prenda: 'lentes', es: 'Lentes', en: 'Glasses' },
+  p_mono: { t: 'cosa', prenda: 'mono', es: 'Moño', en: 'Bow' },
+  p_corona: { t: 'cosa', prenda: 'corona', es: 'Corona', en: 'Crown' },
+  p_flor: { t: 'cosa', prenda: 'flor', es: 'Flor para el pelo', en: 'Hair flower' },
 };
+function dibujoPrenda(tipo, c) {   // dibujos propios de la ropa (100 × 100)
+  if (tipo === 'camisa') return `<path d="M30 8 L42 4 Q50 14 58 4 L70 8 L94 30 L80 44 L74 38 L74 96 L26 96 L26 38 L20 44 L6 30 Z" fill="${c}" stroke="#0003" stroke-width="2"/>`;
+  if (tipo === 'vestido') return `<path d="M36 4 L44 4 Q50 12 56 4 L64 4 L66 32 L92 96 L8 96 L34 32 Z" fill="${c}" stroke="#0003" stroke-width="2"/><path d="M34 34 H66" stroke="#fff8" stroke-width="5"/>`;
+  if (tipo === 'pantalon') return `<path d="M22 6 H78 L84 96 H56 L50 38 L44 96 H16 Z" fill="${c}" stroke="#0003" stroke-width="2"/>`;
+  return `<g transform="translate(-10 4)">${accesorio(tipo, c)}</g>`;
+}
+for (const k of Object.keys(CAT)) if (CAT[k].prenda) CAT[k].svg = e => svg(100, 100, dibujoPrenda(CAT[k].prenda, e.color || '#3b82f6'));
 const PRECIOS = { manzana: 2, platano: 1, naranja: 2, fresa: 3, sandia: 5, uvas: 3, pina: 4, tomate: 1, cebolla: 1, papa: 1, zanahoria: 1, aguacate: 3, maiz: 2, lechuga: 1,
                   pan: 2, galleta: 1, pastel: 5, tortilla: 1, leche: 3, queso: 4, huevo: 2, arroz: 2, frijoles: 2, chocolate: 3 };
 // Cocinar: en la estufa prendida (directo), en la olla sobre la estufa prendida, o en la licuadora
@@ -390,6 +449,24 @@ const PUESTOS = [
 ];
 const ESTANTE = 470, MOSTRADOR_P = 620;
 ESCENAS.mercado.superficies = PUESTOS.map(p => ({ x0: p.x, x1: p.x + 420, y: MOSTRADOR_P }));   // los mostradores de los puestos
+// Salón (peinar) y tienda de ropa (arrastrar la ropa al personaje)
+ESCENAS.salon = { w: 2000, nombre: ['El salón y la tienda', 'Salon & clothes shop'], superficies: [{ x0: 1320, x1: 1700, y: 640 }] };
+const ROPA_COL = { rojo: '#ef4444', naranja: '#f97316', amarillo: '#facc15', verde: '#22c55e', azul: '#3b82f6', morado: '#a855f7', rosa: '#ec4899', blanco: '#f8fafc', negro: '#1f2937', cafe: '#92400e', marino: '#1e3a8a' };
+const C = ROPA_COL;
+const COLGADOS = [['p_camisa', C.rojo], ['p_camisa', C.amarillo], ['p_camisa', C.verde], ['p_camisa', C.azul], ['p_camisa', C.morado],
+                  ['p_vestido', C.rosa], ['p_vestido', C.rojo], ['p_vestido', C.azul], ['p_vestido', C.amarillo], ['p_vestido', C.blanco]];
+const PANTALONES = [['p_pantalon', C.marino], ['p_pantalon', C.negro], ['p_pantalon', C.cafe], ['p_pantalon', C.verde], ['p_pantalon', C.rosa]];
+const ACCESORIOS = [['p_gorra', C.azul], ['p_lentes', C.negro], ['p_mono', C.rosa], ['p_corona', C.rojo], ['p_flor', C.morado]];
+function salonInicial(id) {
+  const ents = [], m = (k, x, y, extra = {}) => ents.push({ id: id++, k, esc: 'salon', x, y, ...extra });
+  m('silla_salon', 230, PISO); m('silla_salon', 600, PISO); m('espejo', 240, 470); m('espejo', 610, 470); m('planta', 820, PISO);
+  COLGADOS.forEach(([k, c], i) => m('percha', 950 + i * 76, 396, { de: k, color: c }));
+  PANTALONES.forEach(([k, c], i) => m('percha', 950 + i * 76, 616, { de: k, color: c }));
+  ACCESORIOS.forEach(([k, c], i) => m('percha', 1360 + i * 76, 640, { de: k, color: c }));
+  m('cabina', 1860, PISO);
+  ents.push({ id: id++, k: 'per', esc: 'salon', x: 420, y: PISO, pose: 'parado', mira: 1, tam: 'adulto', piel: '#f1c27d', pelo: 'afro', colorPelo: '#7c3aed', ropa: 'vestido', color: '#14b8a6', pantalon: '#f1c27d', acc: 'lentes', accCol: '#ec4899' });
+  return { ents, sigId: id };
+}
 function mercadoInicial(id) {
   const ents = [];
   PUESTOS.forEach(p => p.de.forEach((k, i) => ents.push({ id: id++, k: 'canasta', de: k, esc: 'mercado', x: p.x + 70 + (i % 3) * 140, y: i < 3 ? ESTANTE : MOSTRADOR_P })));
@@ -401,7 +478,7 @@ function mercadoInicial(id) {
 const LUGARES = [
   { k: 'casa', x: 140, es: 'Casa', en: 'House', listo: true },
   { k: 'mercado', x: 500, es: 'Mercado', en: 'Market', listo: true },
-  { k: 'salon', x: 860, es: 'Salón', en: 'Salon' },
+  { k: 'salon', x: 860, es: 'Salón', en: 'Salon', listo: true },
   { k: 'iglesia', x: 1220, es: 'Iglesia y parque', en: 'Church & park' },
 ];
 
@@ -436,6 +513,7 @@ try { E = JSON.parse(localStorage.getItem('pueblito.estado')) || DEF(); } catch 
 // Partidas de la etapa 1: agregar el mercado y los utensilios de la cocina
 function migrar() {
   if (!E.ents.some(e => e.esc === 'mercado')) { const m = mercadoInicial(E.sigId); E.ents.push(...m.ents); E.sigId = m.sigId; }
+  if (!E.ents.some(e => e.esc === 'salon')) { const m = salonInicial(E.sigId); E.ents.push(...m.ents); E.sigId = m.sigId; }
   if (!E.ents.some(e => e.k === 'olla')) {
     const estufa = E.ents.find(e => e.k === 'estufa' && e.esc === 'casa'), mesa = E.ents.find(e => e.k === 'mesa' && e.esc === 'casa');
     if (estufa) E.ents.push({ id: E.sigId++, k: 'olla', esc: 'casa', x: estufa.x + 52, y: estufa.y - CAT.estufa.sup, dentro: [] });
@@ -476,7 +554,7 @@ function construir() {
   document.body.classList.toggle('enMapa', E.esc === 'mapa');
   ['bMuebles', 'bPintar'].forEach(id => $(id).style.display = E.esc === 'mapa' ? 'none' : '');
   cerrarCajones();
-  if (E.esc === 'mapa') construirMapa(); else if (E.esc === 'mercado') construirMercado(); else construirCasa();
+  if (E.esc === 'mapa') construirMapa(); else if (E.esc === 'mercado') construirMercado(); else if (E.esc === 'salon') construirSalon(); else construirCasa();
   $('bPintar').style.display = E.esc === 'casa' ? '' : 'none';
   const oscuro = document.createElement('div'); oscuro.id = 'oscuro'; lienzo.appendChild(oscuro);
   lienzo.classList.toggle('noche', E.noche);
@@ -520,6 +598,20 @@ function construirMercado() {
   }
   s += `<rect x="1900" y="96" width="290" height="56" rx="14" fill="#fff" stroke="#f97316" stroke-width="5"/><text x="2045" y="134" font-size="28" font-weight="900" text-anchor="middle" fill="#1f2937">💰 ${T('Caja', 'Checkout').split(' · ')[0]}</text>`;
   f.innerHTML = svg(2300, 900, s);
+  lienzo.appendChild(f);
+}
+function construirSalon() {
+  const f = document.createElement('div'); f.className = 'fondo';
+  let s = `<rect width="900" height="760" fill="#fce7f3"/><rect x="900" width="1100" height="760" fill="#e0f2fe"/>
+    ${Array.from({ length: 40 }, (_, k) => `<rect x="${k * 50}" y="760" width="50" height="140" fill="${k % 2 ? '#fbcfe8' : '#fff'}"/>`).join('')}
+    <rect x="886" y="0" width="28" height="520" fill="#e7d3b5"/>
+    <rect x="300" y="96" width="300" height="60" rx="16" fill="#fff" stroke="#db2777" stroke-width="5"/><text x="450" y="138" font-size="32" font-weight="900" text-anchor="middle" fill="#9d174d">💇 ${T('Salón', 'Salon').split(' · ')[0]}</text>
+    <rect x="1150" y="96" width="320" height="60" rx="16" fill="#fff" stroke="#2563eb" stroke-width="5"/><text x="1310" y="138" font-size="32" font-weight="900" text-anchor="middle" fill="#1e3a8a">👗 ${T('Tienda de ropa', 'Clothes shop').split(' · ')[0]}</text>
+    <rect x="80" y="560" width="70" height="12" rx="4" fill="#be185d"/>${['#a855f7', '#22c55e', '#f97316'].map((c, i) => `<rect x="${86 + i * 22}" y="530" width="14" height="30" rx="4" fill="${c}"/>`).join('')}
+    <rect x="930" y="300" width="760" height="10" rx="5" fill="#475569"/><rect x="930" y="520" width="380" height="10" rx="5" fill="#475569"/>
+    <rect x="924" y="300" width="10" height="460" fill="#64748b"/><rect x="1302" y="520" width="10" height="240" fill="#64748b"/>
+    <rect x="1320" y="640" width="380" height="18" rx="6" fill="#a16207"/><rect x="1336" y="656" width="348" height="104" fill="#ca8a04"/>`;
+  f.innerHTML = svg(2000, 900, s);
   lienzo.appendChild(f);
 }
 function construirMapa() {
@@ -659,6 +751,7 @@ function soltarEn(e, x, y) {
     if (a) {
       e.asiento = a; colocar(e); sfx.caer();
       const m = ent(a.id);
+      if (CAT[m.k].estilista) abrirEstilista(e);
       if (m.k === 'tina') { sfx.agua(); burbuja(e, '🫧'); } else if (CAT[m.k].asientos[a.i].pose === 'acostado') burbuja(e, E.noche ? '💤' : '😴');
       guardar(); return;
     }
@@ -706,6 +799,9 @@ function tocar(e) {
     if (e.on) di(c.es, c.en);
     guardar(); return;
   }
+  if (e.k === 'cabina') { abrirCreador(e); return; }
+  if (e.k === 'percha') { const k = CAT[e.de]; sfx.pop(); di(k.es, k.en); return; }
+  if (e.k === 'silla_salon') { const p = enEscena().find(o => o.asiento?.id === e.id); if (p) abrirEstilista(p); else di('Sienta a alguien para peinarlo.', 'Seat someone to style their hair.'); return; }
   if (e.k === 'canasta') { const k = CAT[e.de], p = PRECIOS[e.de]; sfx.pop(); burbuja(e, k.emo); di(`${k.es}: ${p} ${p === 1 ? 'moneda' : 'monedas'}`, `${k.en}: ${p} ${p === 1 ? 'coin' : 'coins'}`); return; }
   if (e.k === 'registradora') { cobrar(e); return; }
   if (e.k === 'licuadora') { licuar(e); return; }
@@ -831,6 +927,88 @@ $('cobroMoneda').onclick = () => {
 };
 $('cobroListo').onclick = () => { $('cobro').classList.remove('abierta'); cobro = null; };
 
+// ---------- Salón: peinados, color de pelo y accesorios ----------
+const PEINADOS = ['corto', 'largo', 'coletas', 'trenza', 'chongo', 'rizado', 'afro', 'cresta', 'calvo'];
+const COLORES_PELO = ['#1f1300', '#4a2511', '#8b5a2b', '#c2410c', '#d4a017', '#f5d76e', '#9ca3af', '#f8fafc', '#ec4899', '#3b82f6', '#7c3aed', '#22c55e'];
+const ACCS = [['', ''], ['lentes', C.negro], ['gorra', C.azul], ['mono', C.rosa], ['corona', C.rojo], ['flor', C.morado]];
+const cabeza = p => svgPersonaje({ ...p, pose: 'parado' }).replace('viewBox="0 0 120 240"', 'viewBox="0 -14 120 112"');
+let estilo = null;
+function abrirEstilista(p) {
+  cerrarCajones(); estilo = { p };
+  pintarEstilista(); $('estilista').classList.add('abierto');
+  sfx.mochila(); di('¡Al salón! Elige un peinado.', 'To the salon! Pick a hairstyle.');
+}
+function cerrarEstilista() { estilo = null; $('estilista').classList.remove('abierto'); }
+function pintarEstilista() {
+  const p = estilo.p, fila = (id, items, html, elegir, sel, clase = '') => {
+    const f = $(id); f.innerHTML = '';
+    for (const it of items) {
+      const b = document.createElement('button'); b.className = clase + (sel(it) ? ' sel' : ''); b.innerHTML = html(it);
+      if (clase === 'color') b.style.background = it;
+      b.onclick = () => { elegir(it); dibujarElem(p); colocar(p); burbuja(p, '✨'); tono(880 + Math.random() * 400, 0, 0.12, 'sine', 0.1); guardar(); pintarEstilista(); };
+      f.appendChild(b);
+    }
+  };
+  fila('estPelo', p.tam === 'bebe' ? ['bebe', ...PEINADOS] : PEINADOS, s => cabeza({ ...p, pelo: s, acc: '' }), s => p.pelo = s, s => p.pelo === s);
+  fila('estColor', COLORES_PELO, () => '', c => p.colorPelo = c, c => p.colorPelo === c, 'color');
+  fila('estAcc', ACCS, ([a, c]) => a ? cabeza({ ...p, acc: a, accCol: p.acc === a ? p.accCol : c }) : '🚫', ([a, c]) => { if (p.acc !== a) p.accCol = c; p.acc = a; }, ([a]) => (p.acc || '') === a);
+}
+$('estCerrar').onclick = () => { sfx.pop(); cerrarEstilista(); };
+
+// ---------- Tienda de ropa: arrastrar la prenda al personaje ----------
+function vestir(p, prenda) {
+  const c = CAT[prenda.k], col = prenda.color || C.azul;
+  if (c.prenda === 'camisa' || c.prenda === 'vestido') { p.ropa = c.prenda; p.color = col; }
+  else if (c.prenda === 'pantalon') p.pantalon = col;
+  else if (p.acc === c.prenda && p.accCol === col) p.acc = '';   // ponerse lo mismo otra vez se lo quita
+  else { p.acc = c.prenda; p.accCol = col; }
+  E.ents = E.ents.filter(o => o !== prenda); elems.get(prenda.id)?.remove(); elems.delete(prenda.id);
+  dibujarElem(p); colocar(p); burbuja(p, '✨');
+  [659, 880, 1175].forEach((f, i) => tono(f, i * 0.08, 0.18, 'triangle', 0.12));
+  di(c.es, c.en); guardar();
+}
+
+// ---------- Cabina: personajes nuevos (para crear a toda la familia) ----------
+const PIELES = ['#fde7d6', '#f1c27d', '#e0ac69', '#c68642', '#8d5524', '#5c3317'];
+const MAX_PERSONAJES = 20;
+let creacion = { tam: 'nino', piel: PIELES[2] }, cabinaActual = null;
+function abrirCreador(cab) {
+  cerrarCajones(); cabinaActual = cab;
+  pintarCreador(); $('creador').classList.add('abierto');
+  sfx.mochila(); di('¡Vamos a crear a alguien nuevo! ¿Grande, niño o bebé?', "Let's make someone new! Grown-up, kid or baby?");
+}
+function pintarCreador() {
+  const muestra = (tam, piel) => svgPersonaje({ tam, piel, pose: 'parado', pelo: tam === 'bebe' ? 'bebe' : 'corto', colorPelo: '#4a2511', ropa: 'camisa', color: '#a855f7', pantalon: '#1e3a8a' });
+  const t = $('creaTam'); t.innerHTML = '';
+  for (const tam of ['adulto', 'nino', 'bebe']) {
+    const b = document.createElement('button'); b.className = creacion.tam === tam ? 'sel' : '';
+    const esc = { adulto: 1, nino: 0.8, bebe: 0.58 }[tam];
+    b.innerHTML = `<div style="width:${30 * esc}px;height:${60 * esc}px;margin-top:auto">${muestra(tam, creacion.piel)}</div>`;
+    b.onclick = () => { creacion.tam = tam; sfx.pop(); di(...{ adulto: ['Grande', 'Grown-up'], nino: ['Niño', 'Kid'], bebe: ['Bebé', 'Baby'] }[tam]); pintarCreador(); };
+    t.appendChild(b);
+  }
+  const p = $('creaPiel'); p.innerHTML = '';
+  for (const c of PIELES) {
+    const b = document.createElement('button'); b.className = 'color' + (creacion.piel === c ? ' sel' : ''); b.style.background = c;
+    b.onclick = () => { creacion.piel = c; sfx.pop(); pintarCreador(); };
+    p.appendChild(b);
+  }
+}
+$('creaListo').onclick = () => {
+  if (E.ents.filter(e => e.k === 'per').length >= MAX_PERSONAJES) { toast('👥 ' + T('¡Ya hay muchos personajes!', 'There are lots of characters already!')); return; }
+  const cab = cabinaActual || enEscena().find(e => e.k === 'cabina'); if (!cab) return;
+  const azarDe = a => a[azar(a.length)], cols = Object.values(ROPA_COL), bebe = creacion.tam === 'bebe';
+  const n = { id: E.sigId++, k: 'per', esc: E.esc, x: cab.x - 170, y: PISO, pose: 'parado', mira: -1, nuevo: true, tam: creacion.tam, piel: creacion.piel,
+    pelo: bebe ? 'bebe' : azarDe(PEINADOS.slice(0, 8)), colorPelo: azarDe(COLORES_PELO.slice(0, 7)), ropa: azar(2) ? 'camisa' : 'vestido', color: azarDe(cols), pantalon: azarDe(cols) };
+  E.ents.push(n); crearElem(n); colocar(n);
+  const el = elems.get(n.id); el.classList.add('brinca');
+  for (const emo of ['✨', '⭐', '💫']) burbuja(n, emo);
+  [523, 659, 784, 1047, 1319].forEach((f, i) => tono(f, i * 0.08, 0.2, 'triangle', 0.12));
+  di('¡Hola! ¿Cómo me veo? Llévame al salón y a la tienda.', 'Hi! How do I look? Take me to the salon and the shop.');
+  $('creador').classList.remove('abierto'); guardar();
+};
+$('creaCerrar').onclick = () => { sfx.pop(); $('creador').classList.remove('abierto'); };
+
 // ---------- Dar cosas a los personajes: comer o tomarlas con la mano ----------
 function personajeEn(x, y, menos) {
   return enEscena().filter(o => o.k === 'per' && o !== menos).find(o => { const [w, h] = medidas(o); return x > o.x - w / 2 && x < o.x + w / 2 && y > o.y - h && y < o.y; });
@@ -879,6 +1057,7 @@ function levantar(en) {
   if (en.k === 'per' && en.asiento) { en.asiento = null; en.pose = 'parado'; dibujarElem(en); toque.dx = 0; toque.dy = -medidas(en)[1] * 0.4; }
   if (en.dueno) { en.dueno = null; toque.dx = 0; toque.dy = -30; }
   en.sobre = null;
+  if (estilo?.p === en) cerrarEstilista();
   elems.get(en.id).classList.add('levantado'); elems.get(en.id).classList.remove('cae', 'flota');
   sfx.levantar();
   $('basura').classList.toggle('ver', en.k !== 'per');
@@ -893,6 +1072,7 @@ function movToque(e) {
     if (!CAT[en.k].fuente) { toque = { pan: true, x0: toque.x0, cam0: camX }; return; }
     const [mx, my] = aMundo(e.clientX, e.clientY);
     const n = { id: E.sigId++, k: en.de, esc: E.esc, x: mx, y: my + 33 };
+    if (en.color) n.color = en.color;
     E.ents.push(n); crearElem(n); colocar(n);
     toque = { id: n.id, x0: toque.x0, y0: toque.y0, dx: 0, dy: -33, arrastrando: false };
     levantar(n); moverArrastre(); return;
@@ -922,6 +1102,7 @@ function finToque() {
   const [mx, my] = aMundo(...ultimoPuntero);
   if (ultimoPuntero[1] > innerHeight - 84) { aMochila(en); return; }
   if (en.k !== 'per' && ultimoEnBasura) { borrar(en); return; }
+  if (CAT[en.k]?.prenda) { const p = personajeEn(mx, my, null); if (p) { vestir(p, en); return; } }
   if (CAT[en.k]?.t === 'cosa' && CAT[en.k].comida) {   // ingredientes a la olla o a la licuadora
     const u = utensilioEn(mx, my, en);
     if (u) { echarA(u, en); return; }
@@ -993,7 +1174,7 @@ function pintarBolsillo() {
 }
 
 // ---------- Muebles y juguetes nuevos, y pintar paredes y pisos ----------
-function cerrarCajones() { ['cajon', 'paleta'].forEach(id => $(id).classList.remove('abierto')); $('bMuebles').classList.remove('on'); $('bPintar').classList.remove('on'); modoPintar = false; }
+function cerrarCajones() { cerrarEstilista(); $('creador').classList.remove('abierto'); ['cajon', 'paleta'].forEach(id => $(id).classList.remove('abierto')); $('bMuebles').classList.remove('on'); $('bPintar').classList.remove('on'); modoPintar = false; }
 $('bMuebles').onclick = () => {
   audio(); const abrir = !$('cajon').classList.contains('abierto'); cerrarCajones();
   if (!abrir) return;
@@ -1059,6 +1240,14 @@ function abrirPanel() {
   $('panel').classList.add('abierta');
 }
 $('bCerrarPanel').onclick = () => { $('panel').classList.remove('abierta'); construir(); };
+$('bBorrarNuevos').onclick = () => {
+  const nuevos = E.ents.filter(e => e.nuevo);
+  if (!nuevos.length) { toast('No hay personajes creados'); return; }
+  if (!confirm(`¿Borrar ${nuevos.length} personaje(s) creados en la cabina?`)) return;
+  for (const n of nuevos) { for (const o of E.ents) if (o.dueno === n.id) o.dueno = null; }
+  E.ents = E.ents.filter(e => !e.nuevo); E.bolsillo = E.bolsillo.filter(id => ent(id));
+  guardar(); toast('Listo'); construir();
+};
 $('bReiniciar').onclick = () => {
   if (!confirm('¿Borrar la casa, los muebles y los personajes y empezar de nuevo? Esto no se puede deshacer.')) return;
   const idioma = E.idioma; E = DEF(); E.idioma = idioma; migrar(); guardar(); $('panel').classList.remove('abierta'); construir();
