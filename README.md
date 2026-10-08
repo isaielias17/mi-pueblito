@@ -3,7 +3,11 @@
 Un pueblito para jugar libremente, sin reglas ni metas, al estilo de los juegos de "casita": arrastras a los personajes y las cosas con el dedo e inventas tus propias historias. Bilingüe (español / English). Sin anuncios, sin chat y sin internet.
 
 ## Cómo se juega
-- **🗺️ El pueblo:** desliza el mapa y toca un lugar para entrar: la **Casa**, el **Mercado**, el **Salón y la tienda de ropa**, el **Parque y la iglesia**, la **Escuela** y el **Doctor**. Pronto: restaurante, bomberos y policía, granja y zoológico, playa, aeropuerto y el arca de Noé.
+- **🗺️ El pueblo:** desliza el mapa y toca un lugar para entrar: la **Casa**, el **Mercado**, el **Salón y la tienda de ropa**, el **Parque y la iglesia**, la **Escuela**, el **Doctor**, el **Restaurante** y **Bomberos y policía**. Pronto: granja y zoológico, playa, aeropuerto y el arca de Noé.
+- **🚌 Autobús:** tócalo arriba para llamarlo. Suelta personajes en él (caben 5; se ven en las ventanas), tócalo y elige a dónde ir: viaja y los baja en el otro lugar.
+- **🍕 El restaurante:** saca una pizza de la charola y ponle ingredientes encima (salsa, queso, piña, aceitunas, champiñones, chile, albahaca). Métela al **horno** y sale doradita. Sírvela a los clientes de las mesas; hay menú y caja para cobrar.
+- **🚒 Bomberos:** camión con sirena, **tubo** para bajar deslizándose (suelta a alguien arriba), cascos para ponerse y una casa de práctica: la **alarma** prende fueguitos de juguete que se apagan con la cubeta o el extintor (3 chorros cada uno).
+- **🚓 Policía:** patrulla con sirena, **semáforo** (verde: avanza, amarillo: cuidado, rojo: alto), escritorio con teléfono y gorras de policía.
 - **🔎 Secretos:** en cada lugar hay algo escondido detrás de un mueble (a veces se asoma y brilla). Mueve los muebles para encontrarlo; el botón 🔎 muestra el álbum de secretos encontrados.
 - **🏫 La escuela:** dibuja con el dedo en el **pizarrón** (gis blanco, amarillo o rosa; 🧽 borra), y con 🔤 cambia la letra del día ("A de árbol · A for apple"). El **ábaco** cuenta del 1 al 10, el globo terráqueo gira, hay pupitres para sentarse, útiles escolares y un patio con bandera.
 - **🏥 El doctor:** sala de espera, camilla, y herramientas en el carrito: la **curita** se queda puesta (se quita en la tina), el **termómetro** dice la temperatura y el **estetoscopio** hace sonar el corazón. Sube a alguien a la **báscula** para saber cuánto pesa y a los **rayos X** para ver sus huesos. La ambulancia prende la sirena.
