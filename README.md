@@ -3,7 +3,10 @@
 Un pueblito para jugar libremente, sin reglas ni metas, al estilo de los juegos de "casita": arrastras a los personajes y las cosas con el dedo e inventas tus propias historias. Bilingüe (español / English). Sin anuncios, sin chat y sin internet.
 
 ## Cómo se juega
-- **🗺️ El pueblo:** toca un lugar para entrar: la **Casa**, el **Mercado**, el **Salón y la tienda de ropa** y el **Parque y la iglesia**.
+- **🗺️ El pueblo:** desliza el mapa y toca un lugar para entrar: la **Casa**, el **Mercado**, el **Salón y la tienda de ropa**, el **Parque y la iglesia**, la **Escuela** y el **Doctor**. Pronto: restaurante, bomberos y policía, granja y zoológico, playa, aeropuerto y el arca de Noé.
+- **🔎 Secretos:** en cada lugar hay algo escondido detrás de un mueble (a veces se asoma y brilla). Mueve los muebles para encontrarlo; el botón 🔎 muestra el álbum de secretos encontrados.
+- **🏫 La escuela:** dibuja con el dedo en el **pizarrón** (gis blanco, amarillo o rosa; 🧽 borra), y con 🔤 cambia la letra del día ("A de árbol · A for apple"). El **ábaco** cuenta del 1 al 10, el globo terráqueo gira, hay pupitres para sentarse, útiles escolares y un patio con bandera.
+- **🏥 El doctor:** sala de espera, camilla, y herramientas en el carrito: la **curita** se queda puesta (se quita en la tina), el **termómetro** dice la temperatura y el **estetoscopio** hace sonar el corazón. Sube a alguien a la **báscula** para saber cuánto pesa y a los **rayos X** para ver sus huesos. La ambulancia prende la sirena.
 - **🌳 El parque:** sienta a alguien en el **columpio** y se mece; suéltalo arriba de la **resbaladilla** y baja deslizándose. Hay una banca, un árbol y la casita del perro. **4 mascotas** (perro, gato, conejo y perico): tócalas y hacen su sonido; dales comida y se la comen.
 - **⛪ La iglesia:** bancas para sentarse, el púlpito con la Biblia 📖 (lee versículos), la cruz y los vitrales. La **campana** suena al tocarla y el **piano** toca "Cristo me ama"; los personajes que estén en la tarima del **coro** cantan 🎵.
 - **💇 El salón:** sienta a un personaje en el sillón y elige su peinado (corto, largo, coletas, trenza, chongo, rizado, afro, cresta o calvo), el color de pelo (12, también rosa, azul, morado y verde) y un accesorio (lentes, gorra, moño, corona o flor).

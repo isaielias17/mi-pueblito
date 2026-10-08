@@ -102,6 +102,16 @@
   .btn { background: #f1f5f9; border-radius: 999px; padding: 10px 16px; font-weight: 700; }
   .btn.principal { background: #1f2937; color: #fff; }
   .btn.peligro { background: #fee2e2; color: #b91c1c; }
+  .botonPiz { position: absolute; top: 286px; width: 52px; height: 34px; border-radius: 10px; background: #fff; font-size: 20px; box-shadow: 0 3px 0 #0003; }
+  .secreto .emo { animation: destello 2.6s ease-in-out infinite; }
+  @keyframes destello { 0%, 80%, 100% { filter: none; } 90% { filter: drop-shadow(0 0 10px #fde047) brightness(1.3); } }
+  .sirena-on .sirena { animation: sirena .35s infinite alternate; }
+  @keyframes sirena { to { fill: #3b82f6; } }
+  #albumSecretos { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 8px; }
+  .fichaSecreto { background: #fef3c7; border-radius: 16px; padding: 8px; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .fichaSecreto span { font-size: 44px; line-height: 1.1; font-family: "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif; }
+  .fichaSecreto small { font-weight: 700; font-size: 12px; text-align: center; }
+  .fichaSecreto.no { background: #f1f5f9; }
   .mece { transform-box: view-box; transform-origin: 115px 10px; }
   .meciendo .mece, .columpiando .cuerpo { animation: mece 1.4s ease-in-out infinite alternate; }
   @keyframes mece { from { transform: rotate(-18deg); } to { transform: rotate(18deg); } }
@@ -149,6 +159,7 @@
   <button id="bMapa" class="boton" title="Pueblo">🗺️</button>
   <span id="cLugar" class="chip"></span>
   <span class="espacio"></span>
+  <button id="bSecretos" class="boton" title="Secretos">🔎</button>
   <button id="bNoche" class="boton" title="Día / noche">🌙</button>
   <button id="bMuebles" class="boton" title="Muebles y juguetes">🛋️</button>
   <button id="bPintar" class="boton" title="Pintar">🎨</button>
@@ -191,6 +202,11 @@
     <button id="cobroMoneda">🪙</button>
     <button id="cobroListo" class="btn">✖️</button>
   </div>
+</div></div>
+<div id="album" class="capa"><div class="tarjeta" style="position:relative">
+  <h2 id="tituloAlbum"></h2>
+  <div id="albumSecretos"></div>
+  <button class="btn principal" id="cerrarAlbum">👍</button>
 </div></div>
 <div id="toast"></div>
 
@@ -285,6 +301,7 @@ function svgPersonaje(p) {
                : `<g class="ojos"><ellipse cx="48" cy="52" rx="4.5" ry="5.5" fill="#1f2937"/><ellipse cx="72" cy="52" rx="4.5" ry="5.5" fill="#1f2937"/><circle cx="49.5" cy="50" r="1.5" fill="#fff"/><circle cx="73.5" cy="50" r="1.5" fill="#fff"/></g>`;
   s += `<circle cx="40" cy="64" r="5" fill="#f87171" opacity=".35"/><circle cx="80" cy="64" r="5" fill="#f87171" opacity=".35"/>`;
   s += `<path class="boca" d="M50 67 Q60 76 70 67" stroke="#7f1d1d" stroke-width="3" fill="none" stroke-linecap="round"/><ellipse class="bocaAbierta" cx="60" cy="71" rx="6" ry="7" fill="#7f1d1d"/>`;
+  if (p.curitas) s += [[93, 128, 35], [74, 62, -20], [27, 118, -35]].slice(0, p.curitas).map(([x, y, g]) => `<rect x="${x - 9}" y="${y - 4}" width="18" height="8" rx="3" fill="#fcd9b6" stroke="#d6a77a" stroke-width="1.5" transform="rotate(${g} ${x} ${y})"/>`).join('');
   s += peloFrente(p.pelo, H);
   if (p.acc) s += accesorio(p.acc, p.accCol || '#ec4899');
   return svg(120, 240, s);
@@ -431,6 +448,42 @@ const CAT = {
     svg: () => svg(220, 180, `<rect x="0" y="0" width="220" height="110" rx="10" fill="#1f2937"/><rect x="10" y="90" width="200" height="34" fill="#f8fafc"/>${Array.from({ length: 13 }, (_, k) => `<path d="M${10 + k * 15.4} 90 V124" stroke="#94a3b8" stroke-width="2"/>`).join('')}${[1, 2, 4, 5, 6, 8, 9, 11, 12].map(k => `<rect x="${6 + k * 15.4}" y="90" width="9" height="20" fill="#111827"/>`).join('')}<rect x="0" y="124" width="220" height="16" rx="5" fill="#1f2937"/><rect x="16" y="140" width="14" height="40" fill="#1f2937"/><rect x="190" y="140" width="14" height="40" fill="#1f2937"/><text x="110" y="60" font-size="34" text-anchor="middle" fill="#facc15">♪ ♫</text>`) },
   campana: { t: 'mueble', w: 110, h: 130, es: 'Campana', en: 'Bell', pegado: true,
     svg: () => svg(110, 130, `<path d="M55 0 V18" stroke="#78716c" stroke-width="6"/><g class="badajo"><path d="M55 16 Q20 18 18 80 L8 104 H102 L92 80 Q90 18 55 16 Z" fill="#facc15" stroke="#b45309" stroke-width="3"/><circle cx="55" cy="116" r="12" fill="#b45309"/></g>`) },
+  // Escuela
+  pizarron: { t: 'mueble', w: 580, h: 320, es: 'Pizarrón', en: 'Chalkboard', fijo: true, pegado: true,
+    svg: e => { const L = LETRAS_PIZ[(e.letra || 0) % LETRAS_PIZ.length]; return svg(580, 320, `<rect x="0" y="0" width="580" height="300" rx="10" fill="${MADERA}"/><rect x="16" y="16" width="548" height="268" fill="#14532d"/><rect x="40" y="296" width="500" height="18" rx="6" fill="${MADERA2}"/><rect x="80" y="288" width="40" height="10" rx="3" fill="#f8fafc"/><rect x="140" y="288" width="40" height="10" rx="3" fill="#fde047"/><text x="40" y="120" font-size="96" font-weight="900" fill="#f8fafc" opacity=".9">${L[0]}${L[0].toLowerCase()}</text><text x="56" y="200" font-size="54">${L[1]}</text><text x="130" y="200" font-size="54">${L[3]}</text>`); } },
+  pupitre: { t: 'mueble', w: 180, h: 150, es: 'Pupitre', en: 'School desk', asientos: [{ dx: -50, dy: 0, pose: 'sentado' }], sup: 104,
+    svg: () => svg(180, 150, `<rect x="6" y="20" width="14" height="80" rx="6" fill="#2563eb"/><rect x="6" y="88" width="70" height="12" rx="5" fill="#2563eb"/><path d="M14 100 V150 M64 100 V150" stroke="#64748b" stroke-width="7"/><rect x="70" y="40" width="110" height="14" rx="5" fill="#f59e0b"/><path d="M90 54 V150 M164 54 V150" stroke="#64748b" stroke-width="7"/>`) },
+  abaco: { t: 'mueble', w: 150, h: 130, es: 'Ábaco', en: 'Abacus',
+    svg: e => { const n = e.cuenta || 0; let s = `<rect x="0" y="0" width="150" height="130" rx="10" fill="none" stroke="${MADERA2}" stroke-width="10"/><path d="M10 40 H140 M10 70 H140 M10 100 H140" stroke="#94a3b8" stroke-width="3"/>`;
+      for (let k = 0; k < 10; k++) { const fila = Math.floor(k / 5) ? 70 : 40, puesto = k < n; s += `<circle cx="${puesto ? 100 + (k % 5) * 9 : 16 + (k % 5) * 12}" cy="${fila}" r="8" fill="${puesto ? '#ef4444' : '#fbbf24'}"/>`; }
+      return svg(150, 130, s + `<text x="75" y="120" font-size="22" font-weight="900" text-anchor="middle" fill="#1f2937">${n || ''}</text>`); } },
+  globo_tierra: { t: 'mueble', w: 90, h: 110, es: 'Globo terráqueo', en: 'Globe',
+    svg: () => svg(90, 110, `<circle cx="45" cy="42" r="38" fill="#38bdf8"/><path d="M22 26 q12 -8 20 4 q-4 12 -14 10 Z M50 50 q16 -6 18 8 q-8 14 -18 4 Z M36 64 q8 2 6 10" fill="#22c55e"/><path d="M45 80 V100" stroke="#78716c" stroke-width="6"/><ellipse cx="45" cy="104" rx="26" ry="6" fill="#78716c"/>`) },
+  bandera: { t: 'mueble', w: 140, h: 380, es: 'Bandera', en: 'Flag', fijo: true,
+    svg: () => svg(140, 380, `<path d="M20 380 V10" stroke="#64748b" stroke-width="8"/><circle cx="20" cy="10" r="8" fill="#facc15"/><path d="M24 20 Q70 0 130 24 V90 Q70 66 24 86 Z" fill="#22c55e"/><circle cx="76" cy="54" r="14" fill="#fff"/><rect x="0" y="366" width="40" height="14" rx="4" fill="#64748b"/>`) },
+  lapiz: { t: 'cosa', emo: '✏️', es: 'Lápiz', en: 'Pencil' },
+  cuaderno: { t: 'cosa', emo: '📓', es: 'Cuaderno', en: 'Notebook' },
+  crayones: { t: 'cosa', emo: '🖍️', es: 'Crayón', en: 'Crayon' },
+  regla: { t: 'cosa', emo: '📏', es: 'Regla', en: 'Ruler' },
+  tijeras: { t: 'cosa', emo: '✂️', es: 'Tijeras', en: 'Scissors' },
+  // Doctor
+  camilla: { t: 'mueble', w: 270, h: 130, es: 'Camilla', en: 'Exam bed', asientos: [{ dx: 10, dy: 70, pose: 'acostado' }],
+    svg: () => svg(270, 130, `<rect x="0" y="40" width="270" height="34" rx="12" fill="#e0f2fe" stroke="#7dd3fc" stroke-width="3"/><path d="M0 50 L40 30 H90 V50" fill="#bae6fd"/><path d="M30 74 V130 M240 74 V130" stroke="#94a3b8" stroke-width="8"/><circle cx="30" cy="126" r="6" fill="#475569"/><circle cx="240" cy="126" r="6" fill="#475569"/>`) },
+  bascula: { t: 'mueble', w: 120, h: 44, es: 'Báscula', en: 'Scale', asientos: [{ dx: 0, dy: 34, pose: 'parado', y0: -34 }],
+    svg: () => svg(120, 44, `<rect x="0" y="10" width="120" height="34" rx="10" fill="#e5e7eb" stroke="#9ca3af" stroke-width="3"/><rect x="38" y="16" width="44" height="18" rx="4" fill="#1f2937"/><text x="60" y="30" font-size="12" font-weight="900" text-anchor="middle" fill="#4ade80">kg</text>`) },
+  rayos_x: { t: 'mueble', w: 220, h: 320, es: 'Rayos X', en: 'X-ray', fijo: true, frente: true, asientos: [{ dx: 0, dy: 0, pose: 'parado' }],
+    svg: e => svg(220, 320, `<rect x="0" y="0" width="22" height="320" rx="8" fill="#64748b"/><rect x="198" y="0" width="22" height="320" rx="8" fill="#64748b"/><rect x="0" y="0" width="220" height="30" rx="8" fill="#475569"/><rect x="22" y="40" width="176" height="200" rx="10" fill="${e.on ? '#0f172acc' : '#93c5fd55'}" stroke="#334155" stroke-width="4"/>${e.on ? `<g stroke="#e0f2fe" stroke-width="6" fill="none" stroke-linecap="round"><circle cx="110" cy="80" r="26"/><circle cx="100" cy="76" r="5" fill="#e0f2fe"/><circle cx="120" cy="76" r="5" fill="#e0f2fe"/><path d="M110 106 V200 M80 124 H140 M84 140 H136 M88 156 H132 M110 124 L70 180 M110 124 L150 180 M110 200 L90 240 M110 200 L130 240"/></g>` : ''}<text x="110" y="24" font-size="18" font-weight="900" text-anchor="middle" fill="#fff">X-RAY</text>`) },
+  biombo: { t: 'mueble', w: 210, h: 260, es: 'Biombo', en: 'Screen',
+    svg: () => svg(210, 260, `${[0, 70, 140].map(x => `<rect x="${x + 4}" y="0" width="62" height="236" rx="6" fill="#ccfbf1" stroke="#5eead4" stroke-width="4"/>`).join('')}<path d="M20 236 V260 M190 236 V260" stroke="#94a3b8" stroke-width="6"/>`) },
+  ambulancia: { t: 'mueble', w: 340, h: 200, es: 'Ambulancia', en: 'Ambulance',
+    svg: e => svg(340, 200, `<rect x="0" y="40" width="250" height="130" rx="14" fill="#f8fafc" stroke="#cbd5e1" stroke-width="4"/><path d="M250 80 H300 Q330 90 340 130 V170 H250 Z" fill="#f8fafc" stroke="#cbd5e1" stroke-width="4"/><path d="M262 90 H296 Q316 98 322 124 H262 Z" fill="#bae6fd"/><rect x="0" y="120" width="340" height="16" fill="#ef4444"/><path d="M110 62 V106 M88 84 H132" stroke="#ef4444" stroke-width="14"/><rect x="100" y="20" width="60" height="22" rx="8" fill="${e.on ? '#ef4444' : '#fca5a5'}" class="sirena"/><circle cx="70" cy="174" r="24" fill="#1f2937"/><circle cx="270" cy="174" r="24" fill="#1f2937"/><circle cx="70" cy="174" r="10" fill="#9ca3af"/><circle cx="270" cy="174" r="10" fill="#9ca3af"/>`) },
+  charola: { t: 'mueble', w: 70, h: 56, es: 'Charola', en: 'Tray', fijo: true, pegado: true, fuente: true,
+    svg: e => svg(70, 56, `<rect x="0" y="30" width="70" height="20" rx="6" fill="#cbd5e1"/><text x="35" y="40" font-size="38" text-anchor="middle">${CAT[e.de].emo}</text>`) },
+  curita: { t: 'cosa', emo: '🩹', es: 'Curita', en: 'Band-aid', herramienta: true },
+  termometro: { t: 'cosa', emo: '🌡️', es: 'Termómetro', en: 'Thermometer', herramienta: true },
+  estetoscopio: { t: 'cosa', emo: '🩺', es: 'Estetoscopio', en: 'Stethoscope', herramienta: true },
+  // Secretos escondidos (detrás de los muebles; se ven un poquito)
+  secreto: { t: 'cosa', es: 'Secreto', en: 'Secret', fijo: true, pegado: true, secreto: true },
   // Mascotas (dibujos propios)
   perro: { t: 'mascota', w: 130, h: 100, es: 'Perro', en: 'Dog',
     svg: () => svg(130, 100, `<path class="cola" d="M112 50 Q130 30 124 18" stroke="#92400e" stroke-width="9" fill="none" stroke-linecap="round"/><ellipse cx="78" cy="58" rx="42" ry="26" fill="#d97706"/><rect x="48" y="70" width="12" height="30" rx="5" fill="#b45309"/><rect x="92" y="70" width="12" height="30" rx="5" fill="#b45309"/><circle cx="34" cy="40" r="28" fill="#d97706"/><ellipse cx="14" cy="34" rx="10" ry="20" fill="#92400e"/><ellipse cx="54" cy="30" rx="9" ry="18" fill="#92400e"/><circle cx="26" cy="36" r="4" fill="#1f2937"/><circle cx="42" cy="36" r="4" fill="#1f2937"/><ellipse cx="33" cy="50" rx="8" ry="6" fill="#1f2937"/><path d="M27 58 Q33 64 39 58" stroke="#1f2937" stroke-width="3" fill="none"/>`) },
@@ -441,6 +494,25 @@ const CAT = {
   perico: { t: 'mascota', w: 80, h: 100, es: 'Perico', en: 'Parrot',
     svg: () => svg(80, 100, `<path d="M40 70 L30 100 M48 70 L58 100" stroke="#f59e0b" stroke-width="4"/><path d="M56 60 L76 96 L60 90 Z" fill="#2563eb"/><ellipse cx="44" cy="54" rx="22" ry="28" fill="#22c55e"/><path d="M30 48 Q44 76 62 56" fill="#16a34a"/><circle cx="40" cy="24" r="18" fill="#22c55e"/><circle cx="44" cy="20" r="4" fill="#1f2937"/><path d="M22 22 Q10 30 22 36 Q28 30 26 24 Z" fill="#f59e0b"/><path d="M36 8 Q40 0 46 8" stroke="#ef4444" stroke-width="4" fill="none"/>`) },
 };
+const LETRAS_PIZ = [   // letra, emoji y palabra en español, emoji y palabra en inglés
+  ['A', '🌳', 'árbol', '🍎', 'apple'], ['B', '⚽', 'balón', '⚽', 'ball'], ['C', '🏠', 'casa', '🐱', 'cat'], ['D', '🦖', 'dinosaurio', '🐶', 'dog'],
+  ['E', '🐘', 'elefante', '🐘', 'elephant'], ['F', '🌸', 'flor', '🐟', 'fish'], ['G', '🐱', 'gato', '🦒', 'giraffe'], ['H', '🍦', 'helado', '🏠', 'house'],
+  ['I', '🏝️', 'isla', '🍦', 'ice cream'], ['J', '🦒', 'jirafa', '🧃', 'juice'], ['K', '🐨', 'koala', '🔑', 'key'], ['L', '🦁', 'león', '🦁', 'lion'],
+  ['M', '🐒', 'mono', '🐒', 'monkey'], ['N', '☁️', 'nube', '👃', 'nose'], ['O', '🐻', 'oso', '🐙', 'octopus'], ['P', '🐧', 'pingüino', '🐧', 'penguin'],
+  ['R', '🐭', 'ratón', '🌈', 'rainbow'], ['S', '☀️', 'sol', '☀️', 'sun'], ['T', '🐢', 'tortuga', '🐯', 'tiger'], ['U', '🍇', 'uvas', '☂️', 'umbrella'],
+  ['V', '🐮', 'vaca', '🎻', 'violin'], ['Z', '🦊', 'zorro', '🦓', 'zebra'],
+];
+// Secretos: cada uno escondido detrás de un mueble que se puede mover
+const SECRETOS = [
+  { sid: 'llave', esc: 'casa', x: 2172, y: 760, emo: '🔑', es: 'una llave dorada', en: 'a golden key' },
+  { sid: 'raton', esc: 'casa', x: 1350, y: 760, emo: '🐭', es: 'un ratoncito', en: 'a little mouse' },
+  { sid: 'moneda', esc: 'mercado', x: 1912, y: 760, emo: '🪙', es: 'una moneda de oro', en: 'a gold coin' },
+  { sid: 'anillo', esc: 'salon', x: 862, y: 760, emo: '💍', es: 'un anillo', en: 'a ring' },
+  { sid: 'regalo', esc: 'iglesia', x: 2088, y: 720, emo: '🎁', es: 'un regalo', en: 'a present' },
+  { sid: 'hueso', esc: 'iglesia', x: 378, y: 760, emo: '🦴', es: 'el hueso del perro', en: "the dog's bone" },
+  { sid: 'hamster', esc: 'escuela', x: 1520, y: 760, emo: '🐹', es: 'el hámster de la clase', en: 'the class hamster' },
+  { sid: 'osito_doc', esc: 'doctor', x: 2238, y: 760, emo: '🧸', es: 'un osito perdido', en: 'a lost teddy bear' },
+];
 function dibujoPrenda(tipo, c) {   // dibujos propios de la ropa (100 × 100)
   if (tipo === 'camisa') return `<path d="M30 8 L42 4 Q50 14 58 4 L70 8 L94 30 L80 44 L74 38 L74 96 L26 96 L26 38 L20 44 L6 30 Z" fill="${c}" stroke="#0003" stroke-width="2"/>`;
   if (tipo === 'vestido') return `<path d="M36 4 L44 4 Q50 12 56 4 L64 4 L66 32 L92 96 L8 96 L34 32 Z" fill="${c}" stroke="#0003" stroke-width="2"/><path d="M34 34 H66" stroke="#fff8" stroke-width="5"/>`;
@@ -489,6 +561,32 @@ const PUESTOS = [
 const ESTANTE = 470, MOSTRADOR_P = 620;
 ESCENAS.mercado.superficies = PUESTOS.map(p => ({ x0: p.x, x1: p.x + 420, y: MOSTRADOR_P }));   // los mostradores de los puestos
 // Salón (peinar) y tienda de ropa (arrastrar la ropa al personaje)
+// Escuela (salón de clases + patio) y doctor (afuera + sala de espera + consultorio)
+ESCENAS.escuela = { w: 2200, nombre: ['La escuela', 'The school'] };
+ESCENAS.doctor = { w: 2300, nombre: ['El doctor', 'The doctor'], superficies: [{ x0: 1330, x1: 1510, y: 640 }] };
+function escuelaInicial(id) {
+  const ents = [], m = (k, x, y = PISO, extra = {}) => { const e = { id: id++, k, esc: 'escuela', x, y, ...extra }; ents.push(e); return e; };
+  m('pizarron', 770, 500, { letra: 0 }); m('mesa', 290); m('globo_tierra', 220, PISO - 120); m('abaco', 350, PISO - 120);
+  const pup = [560, 790, 1020, 1250].map(x => m('pupitre', x));
+  m('librero', 1450); m('bandera', 1700); m('banca', 1960); m('pelota', 1820); m('planta', 2130);
+  m('lapiz', 600, PISO - 104); m('cuaderno', 1060, PISO - 104); m('crayones', 1290, PISO - 104); m('regla', 830, PISO - 104); m('libro', 330, PISO - 120);
+  const per = (look, extra) => ents.push({ id: id++, k: 'per', esc: 'escuela', x: 0, y: 0, pose: 'parado', mira: 1, ...look, ...extra });
+  per({ tam: 'adulto', piel: '#e0ac69', pelo: 'chongo', colorPelo: '#1f1300', ropa: 'vestido', color: '#8b5cf6', pantalon: '#e0ac69', acc: 'lentes', accCol: '#1f2937' }, { x: 430, y: PISO, mira: 1 });
+  per({ tam: 'nino', piel: '#8d5524', pelo: 'rizado', colorPelo: '#1f1300', ropa: 'camisa', color: '#f97316', pantalon: '#1e3a8a' }, { asiento: { id: pup[0].id, i: 0 } });
+  per({ tam: 'nino', piel: '#f1c27d', pelo: 'coletas', colorPelo: '#c2410c', ropa: 'vestido', color: '#22c55e', pantalon: '#f1c27d' }, { asiento: { id: pup[2].id, i: 0 } });
+  return { ents, sigId: id };
+}
+function doctorInicial(id) {
+  const ents = [], m = (k, x, y = PISO, extra = {}) => { const e = { id: id++, k, esc: 'doctor', x, y, ...extra }; ents.push(e); return e; };
+  m('ambulancia', 220); [560, 670, 780].forEach(x => m('silla', x)); m('planta', 900);
+  const camilla = m('camilla', 1150);
+  [['curita', 1360], ['termometro', 1420], ['estetoscopio', 1480]].forEach(([k, x]) => m('charola', x, 640, { de: k }));
+  m('bascula', 1660); m('rayos_x', 1890); m('biombo', 2150);
+  const per = (look, extra) => ents.push({ id: id++, k: 'per', esc: 'doctor', x: 0, y: 0, pose: 'parado', mira: 1, ...look, ...extra });
+  per({ tam: 'adulto', piel: '#c68642', pelo: 'corto', colorPelo: '#1f1300', ropa: 'camisa', color: '#f8fafc', pantalon: '#0d9488', acc: 'lentes', accCol: '#334155' }, { x: 1300, y: PISO, mira: -1 });
+  per({ tam: 'nino', piel: '#fde7d6', pelo: 'corto', colorPelo: '#d4a017', ropa: 'camisa', color: '#ef4444', pantalon: '#1e40af' }, { asiento: { id: camilla.id, i: 0 } });
+  return { ents, sigId: id };
+}
 // Parque (izquierda) e iglesia (derecha); la tarima del coro es una superficie
 const CORO = { x0: 2080, x1: 2390, y: 690 };
 ESCENAS.iglesia = { w: 2400, nombre: ['El parque y la iglesia', 'The park & church'], superficies: [CORO] };
@@ -528,11 +626,21 @@ function mercadoInicial(id) {
   return { ents, sigId: id };
 }
 const LUGARES = [
-  { k: 'casa', x: 140, es: 'Casa', en: 'House', listo: true },
-  { k: 'mercado', x: 500, es: 'Mercado', en: 'Market', listo: true },
-  { k: 'salon', x: 860, es: 'Salón', en: 'Salon', listo: true },
-  { k: 'iglesia', x: 1220, es: 'Iglesia y parque', en: 'Church & park', listo: true },
+  { k: 'casa', es: 'Casa', en: 'House', listo: true },
+  { k: 'mercado', es: 'Mercado', en: 'Market', listo: true },
+  { k: 'salon', es: 'Salón', en: 'Salon', listo: true },
+  { k: 'iglesia', es: 'Iglesia y parque', en: 'Church & park', listo: true },
+  { k: 'escuela', es: 'Escuela', en: 'School', listo: true },
+  { k: 'doctor', es: 'Doctor', en: 'Doctor', listo: true },
+  { k: 'restaurante', es: 'Restaurante', en: 'Restaurant' },
+  { k: 'bomberos', es: 'Bomberos y policía', en: 'Fire & police' },
+  { k: 'granja', es: 'Granja y zoológico', en: 'Farm & zoo' },
+  { k: 'playa', es: 'Playa y mar', en: 'Beach & sea' },
+  { k: 'aeropuerto', es: 'Aeropuerto', en: 'Airport' },
+  { k: 'arca', es: 'El arca de Noé', en: "Noah's ark" },
 ];
+LUGARES.forEach((L, i) => L.x = 140 + i * 380);
+ESCENAS.mapa.w = 140 + LUGARES.length * 380 + 80;
 
 // ---------- Estado guardado ----------
 function casaInicial() {
@@ -567,6 +675,9 @@ function migrar() {
   if (!E.ents.some(e => e.esc === 'mercado')) { const m = mercadoInicial(E.sigId); E.ents.push(...m.ents); E.sigId = m.sigId; }
   if (!E.ents.some(e => e.esc === 'salon')) { const m = salonInicial(E.sigId); E.ents.push(...m.ents); E.sigId = m.sigId; }
   if (!E.ents.some(e => e.esc === 'iglesia')) { const m = iglesiaInicial(E.sigId); E.ents.push(...m.ents); E.sigId = m.sigId; }
+  for (const [k, f] of [['escuela', escuelaInicial], ['doctor', doctorInicial]]) if (!E.ents.some(e => e.esc === k)) { const m = f(E.sigId); E.ents.push(...m.ents); E.sigId = m.sigId; }
+  E.secretos ||= [];
+  for (const s of SECRETOS) if (!E.secretos.includes(s.sid) && !E.ents.some(e => e.sid === s.sid)) E.ents.push({ id: E.sigId++, k: 'secreto', esc: s.esc, x: s.x, y: s.y, sid: s.sid, emo: s.emo });
   if (!E.ents.some(e => e.k === 'olla')) {
     const estufa = E.ents.find(e => e.k === 'estufa' && e.esc === 'casa'), mesa = E.ents.find(e => e.k === 'mesa' && e.esc === 'casa');
     if (estufa) E.ents.push({ id: E.sigId++, k: 'olla', esc: 'casa', x: estufa.x + 52, y: estufa.y - CAT.estufa.sup, dentro: [] });
@@ -607,7 +718,7 @@ function construir() {
   document.body.classList.toggle('enMapa', E.esc === 'mapa');
   ['bMuebles', 'bPintar'].forEach(id => $(id).style.display = E.esc === 'mapa' ? 'none' : '');
   cerrarCajones();
-  if (E.esc === 'mapa') construirMapa(); else if (E.esc === 'mercado') construirMercado(); else if (E.esc === 'salon') construirSalon(); else if (E.esc === 'iglesia') construirIglesia(); else construirCasa();
+  ({ mapa: construirMapa, mercado: construirMercado, salon: construirSalon, iglesia: construirIglesia, escuela: construirEscuela, doctor: construirDoctor }[E.esc] || construirCasa)();
   $('bPintar').style.display = E.esc === 'casa' ? '' : 'none';
   const oscuro = document.createElement('div'); oscuro.id = 'oscuro'; lienzo.appendChild(oscuro);
   lienzo.classList.toggle('noche', E.noche);
@@ -668,6 +779,32 @@ function construirSalon() {
   f.innerHTML = svg(2000, 900, s);
   lienzo.appendChild(f);
 }
+function letrero(x, texto, borde, color) {
+  return `<rect x="${x - 170}" y="70" width="340" height="60" rx="16" fill="#fff" stroke="${borde}" stroke-width="5"/><text x="${x}" y="112" font-size="30" font-weight="900" text-anchor="middle" fill="${color}">${texto}</text>`;
+}
+function construirEscuela() {
+  const f = document.createElement('div'), noche = E.noche; f.className = 'fondo';
+  const abc = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+  f.innerHTML = svg(2200, 900, `<rect width="1500" height="760" fill="#fef3c7"/><rect y="760" width="1500" height="140" fill="#d6a77a"/>
+    ${Array.from({ length: 15 }, (_, k) => `<path d="M${k * 100} 760 V900" stroke="#c08457" stroke-width="4"/>`).join('')}
+    ${abc.map((l, i) => `<rect x="${60 + i * 53}" y="150" width="46" height="52" rx="8" fill="${['#fecaca', '#bfdbfe', '#bbf7d0', '#fde68a'][i % 4]}"/><text x="${83 + i * 53}" y="188" font-size="32" font-weight="900" text-anchor="middle" fill="#1f2937">${l}</text>`).join('')}
+    ${[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n, i) => `<text x="${1110 + (i % 5) * 70}" y="${300 + Math.floor(i / 5) * 70}" font-size="44" font-weight="900" fill="${['#ef4444', '#3b82f6', '#22c55e', '#f59e0b', '#a855f7'][i % 5]}">${n}</text>`).join('')}
+    <rect x="1486" y="0" width="28" height="520" fill="#e7d3b5"/>
+    <rect x="1500" width="700" height="760" fill="${noche ? '#312e81' : '#bae6fd'}"/><rect x="1500" y="600" width="700" height="160" fill="#86efac"/><rect x="1500" y="760" width="700" height="140" fill="#4ade80"/>
+    ${letrero(740, '🏫 ' + T('Escuela', 'School').split(' · ')[0], '#b91c1c', '#7f1d1d')}`);
+  lienzo.appendChild(f);
+}
+function construirDoctor() {
+  const f = document.createElement('div'), noche = E.noche; f.className = 'fondo';
+  f.innerHTML = svg(2300, 900, `<rect width="450" height="760" fill="${noche ? '#312e81' : '#bae6fd'}"/><rect y="760" width="450" height="140" fill="#94a3b8"/><path d="M0 830 H450" stroke="#f8fafc" stroke-width="6" stroke-dasharray="40 30"/>
+    <rect x="450" width="1850" height="760" fill="#f0fdfa"/><rect x="450" y="760" width="1850" height="140" fill="#e2e8f0"/>
+    ${Array.from({ length: 19 }, (_, k) => `<rect x="${450 + k * 100}" y="760" width="50" height="70" fill="#cbd5e1"/>`).join('')}
+    <rect x="436" y="0" width="28" height="760" fill="#e7d3b5"/><rect x="956" y="0" width="28" height="520" fill="#e7d3b5"/>
+    <rect x="1330" y="640" width="180" height="16" rx="5" fill="#94a3b8"/><path d="M1345 656 V740 M1495 656 V740" stroke="#94a3b8" stroke-width="8"/><circle cx="1345" cy="748" r="10" fill="#475569"/><circle cx="1495" cy="748" r="10" fill="#475569"/>
+    <rect x="1080" y="170" width="120" height="120" rx="16" fill="#ef4444"/><path d="M1140 192 V268 M1102 230 H1178" stroke="#fff" stroke-width="22"/>
+    ${letrero(700, '🪑 ' + T('Sala de espera', 'Waiting room').split(' · ')[0], '#0d9488', '#134e4a')}${letrero(1640, '🩺 ' + T('Consultorio', "Doctor's office").split(' · ')[0], '#0d9488', '#134e4a')}`);
+  lienzo.appendChild(f);
+}
 function construirIglesia() {
   const f = document.createElement('div'), noche = E.noche; f.className = 'fondo';
   const vitral = (x, cs) => `<path d="M${x} 520 V300 Q${x + 60} 200 ${x + 120} 300 V520 Z" fill="#fef3c7" stroke="#78716c" stroke-width="8"/>` +
@@ -688,18 +825,27 @@ function construirIglesia() {
 function construirMapa() {
   const noche = E.noche;
   const f = document.createElement('div'); f.className = 'fondo';
-  f.innerHTML = svg(1600, 900, `<defs><linearGradient id="cielo" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${noche ? '#1e1b4b' : '#7cc8ff'}"/><stop offset="1" stop-color="${noche ? '#4338ca' : '#e0f6ff'}"/></linearGradient></defs>
-    <rect width="1600" height="900" fill="url(#cielo)"/><text x="1450" y="130" font-size="90" text-anchor="middle">${noche ? '🌙' : '☀️'}</text>
-    ${noche ? [[200, 90], [520, 160], [800, 70], [1100, 180], [1300, 60], [350, 260], [950, 300]].map(([x, y]) => `<text x="${x}" y="${y}" font-size="34">⭐</text>`).join('')
-            : [[180, 140, 1], [620, 90, 1.3], [1050, 200, 0.9], [380, 300, 0.8]].map(([x, y, s]) => `<g transform="translate(${x} ${y}) scale(${s})"><ellipse cx="0" cy="0" rx="90" ry="38" fill="#fff"/><ellipse cx="-50" cy="12" rx="60" ry="30" fill="#fff"/><ellipse cx="55" cy="10" rx="62" ry="32" fill="#fff"/></g>`).join('')}
-    <path d="M0 620 Q300 470 620 600 Q900 480 1200 590 Q1420 500 1600 580 L1600 900 L0 900 Z" fill="#86efac"/>
-    <rect x="0" y="760" width="1600" height="140" fill="#4ade80"/><rect x="0" y="770" width="1600" height="56" fill="#94a3b8"/><path d="M0 798 H1600" stroke="#f8fafc" stroke-width="6" stroke-dasharray="40 30"/>`);
+  const W = ESCENAS.mapa.w, n = Math.ceil(W / 400);
+  f.innerHTML = svg(W, 900, `<defs><linearGradient id="cielo" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${noche ? '#1e1b4b' : '#7cc8ff'}"/><stop offset="1" stop-color="${noche ? '#4338ca' : '#e0f6ff'}"/></linearGradient></defs>
+    <rect width="${W}" height="900" fill="url(#cielo)"/><text x="${W - 150}" y="130" font-size="90" text-anchor="middle">${noche ? '🌙' : '☀️'}</text>
+    ${Array.from({ length: n }, (_, k) => noche ? `<text x="${k * 400 + 120 + (k * 97) % 200}" y="${70 + (k * 53) % 220}" font-size="34">⭐</text>`
+      : `<g transform="translate(${k * 400 + 150} ${100 + (k * 71) % 200}) scale(${0.8 + (k % 3) * 0.2})"><ellipse rx="90" ry="38" fill="#fff"/><ellipse cx="-50" cy="12" rx="60" ry="30" fill="#fff"/><ellipse cx="55" cy="10" rx="62" ry="32" fill="#fff"/></g>`).join('')}
+    <path d="M0 620 ${Array.from({ length: n }, (_, k) => `Q${k * 400 + 200} ${480 + (k % 2) * 30} ${k * 400 + 400} ${590 - (k % 3) * 10}`).join(' ')} L${W} 900 L0 900 Z" fill="#86efac"/>
+    <rect x="0" y="760" width="${W}" height="140" fill="#4ade80"/><rect x="0" y="770" width="${W}" height="56" fill="#94a3b8"/><path d="M0 798 H${W}" stroke="#f8fafc" stroke-width="6" stroke-dasharray="40 30"/>`);
   lienzo.appendChild(f);
   const DIB = {
     casa: `<path d="M20 170 L150 50 L280 170 Z" fill="#ef4444"/><rect x="40" y="165" width="220" height="215" fill="#fde68a"/><rect x="125" y="270" width="54" height="110" rx="8" fill="#92400e"/><rect x="60" y="200" width="50" height="50" fill="#bae6fd" stroke="#fff" stroke-width="6"/><rect x="190" y="200" width="50" height="50" fill="#bae6fd" stroke="#fff" stroke-width="6"/><rect x="210" y="70" width="30" height="70" fill="#7c2d12"/>`,
     mercado: `<rect x="30" y="150" width="240" height="230" fill="#fef3c7"/><path d="M10 150 L290 150 L270 100 L30 100 Z" fill="#fff"/>${[0, 1, 2, 3, 4, 5, 6].map(k => `<path d="M${30 + k * 34} 100 L${47 + k * 34} 100 L${44 + k * 40} 150 L${10 + k * 40} 150 Z" fill="${k % 2 ? '#fff' : '#22c55e'}"/>`).join('')}<rect x="50" y="300" width="200" height="60" fill="#b7793f"/><text x="85" y="300" font-size="40">🍎</text><text x="135" y="300" font-size="40">🍌</text><text x="185" y="300" font-size="40">🥕</text><rect x="120" y="190" width="60" height="90" rx="6" fill="#92400e"/>`,
     salon: `<rect x="30" y="110" width="240" height="270" fill="#fbcfe8"/><rect x="20" y="90" width="260" height="34" rx="10" fill="#db2777"/><rect x="50" y="170" width="90" height="120" fill="#fff" stroke="#db2777" stroke-width="6"/><text x="95" y="250" font-size="56" text-anchor="middle">👗</text><rect x="170" y="230" width="70" height="150" rx="8" fill="#9d174d"/><text x="205" y="210" font-size="44" text-anchor="middle">✂️</text>`,
     iglesia: `<rect x="40" y="170" width="150" height="210" fill="#f8fafc"/><path d="M30 175 L115 95 L200 175 Z" fill="#60a5fa"/><rect x="95" y="20" width="40" height="90" fill="#f8fafc"/><path d="M89 25 L115 0 L141 25 Z" fill="#60a5fa"/><path d="M115 -40 V-4 M101 -26 H129" stroke="#facc15" stroke-width="8"/><rect x="95" y="290" width="40" height="90" rx="20" fill="#92400e"/><circle cx="115" cy="210" r="22" fill="#fde68a" stroke="#facc15" stroke-width="5"/><text x="245" y="330" font-size="70" text-anchor="middle">🌳</text><path d="M210 380 V300 M280 380 V300 M205 300 H285" stroke="#ef4444" stroke-width="7"/><rect x="232" y="350" width="26" height="8" fill="#92400e"/><path d="M238 300 V350 M252 300 V350" stroke="#64748b" stroke-width="3"/>`,
+    escuela: `<rect x="20" y="130" width="260" height="250" fill="#fca5a5"/><path d="M10 135 L150 60 L290 135 Z" fill="#b91c1c"/><circle cx="150" cy="105" r="22" fill="#fff" stroke="#1f2937" stroke-width="4"/><path d="M150 92 V105 L160 112" stroke="#1f2937" stroke-width="4" fill="none"/>${[50, 120, 190].map(x => `<rect x="${x}" y="170" width="56" height="50" fill="#bae6fd" stroke="#fff" stroke-width="5"/>`).join('')}<rect x="122" y="280" width="56" height="100" rx="6" fill="#7c2d12"/><path d="M240 380 V230" stroke="#64748b" stroke-width="5"/><path d="M240 232 h36 v22 h-36" fill="#22c55e"/>`,
+    doctor: `<rect x="30" y="110" width="240" height="270" fill="#f8fafc" stroke="#cbd5e1" stroke-width="4"/><rect x="110" y="40" width="80" height="80" rx="12" fill="#ef4444"/><path d="M150 54 V106 M124 80 H176" stroke="#fff" stroke-width="16"/>${[60, 190].map(x => `<rect x="${x}" y="160" width="50" height="50" fill="#bae6fd" stroke="#94a3b8" stroke-width="4"/>`).join('')}<rect x="110" y="270" width="80" height="110" fill="#93c5fd" stroke="#64748b" stroke-width="4"/><path d="M150 270 V380" stroke="#64748b" stroke-width="4"/>`,
+    restaurante: `<rect x="30" y="140" width="240" height="240" fill="#fef3c7"/><path d="M20 140 H280 L260 100 H40 Z" fill="#dc2626"/>${[0, 1, 2, 3, 4, 5].map(k => `<path d="M${40 + k * 36} 140 q18 22 36 0" fill="${k % 2 ? '#fff' : '#dc2626'}"/>`).join('')}<circle cx="150" cy="210" r="40" fill="#fbbf24" stroke="#d97706" stroke-width="6"/>${[[135, 195], [165, 200], [145, 225], [170, 225]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="7" fill="#dc2626"/>`).join('')}<rect x="120" y="280" width="60" height="100" rx="6" fill="#92400e"/>`,
+    bomberos: `<rect x="20" y="120" width="260" height="260" fill="#ef4444"/><rect x="20" y="100" width="260" height="30" fill="#991b1b"/><rect x="45" y="230" width="210" height="150" fill="#1f2937"/><path d="M45 260 H255 M45 290 H255 M45 320 H255 M45 350 H255" stroke="#374151" stroke-width="4"/><circle cx="150" cy="175" r="30" fill="#fde68a" stroke="#fff" stroke-width="5"/><text x="150" y="188" font-size="34" text-anchor="middle">🔥</text>`,
+    granja: `<path d="M20 200 L150 90 L280 200 Z" fill="#b91c1c"/><rect x="40" y="195" width="220" height="185" fill="#dc2626"/><path d="M110 380 V270 H190 V380 M110 270 L190 380 M190 270 L110 380" stroke="#fff" stroke-width="7" fill="#7f1d1d"/><rect x="120" y="140" width="60" height="40" fill="#fde68a" stroke="#fff" stroke-width="5"/><path d="M0 380 V330 H300 V380 M0 345 H300" stroke="#fff" stroke-width="6" fill="none"/>`,
+    playa: `<rect x="0" y="300" width="300" height="80" fill="#fde68a"/><path d="M0 300 Q75 280 150 300 T300 300 V250 H0 Z" fill="#38bdf8"/><path d="M200 380 V170" stroke="#92400e" stroke-width="12"/><path d="M200 170 Q150 150 120 190 M200 170 Q250 140 280 180 M200 170 Q180 120 140 120 M200 170 Q230 115 270 125" stroke="#16a34a" stroke-width="14" fill="none" stroke-linecap="round"/><path d="M40 300 L80 200 L120 300 Z" fill="#f472b6"/><path d="M80 200 V320" stroke="#78716c" stroke-width="5"/><circle cx="60" cy="350" r="14" fill="#ef4444"/>`,
+    aeropuerto: `<rect x="20" y="220" width="260" height="160" fill="#e0f2fe" stroke="#64748b" stroke-width="4"/><rect x="200" y="120" width="40" height="110" fill="#94a3b8"/><rect x="180" y="90" width="80" height="40" rx="10" fill="#38bdf8" stroke="#64748b" stroke-width="4"/><path d="M40 260 H200" stroke="#7dd3fc" stroke-width="20"/><g transform="translate(70 70) rotate(-15)"><path d="M0 30 L120 20 Q140 20 140 30 Q140 40 120 40 L0 30" fill="#f8fafc" stroke="#64748b" stroke-width="3"/><path d="M50 30 L30 -10 L50 -10 L80 30 M50 32 L30 70 L50 70 L80 32 M10 30 L0 5 L12 5 L24 30" fill="#ef4444"/></g>`,
+    arca: `<path d="M0 300 Q75 280 150 300 T300 300 V380 H0 Z" fill="#38bdf8"/><path d="M20 220 H280 L250 310 H50 Z" fill="#92400e"/><path d="M28 240 H272 M38 270 H262" stroke="#7c2d12" stroke-width="5"/><rect x="90" y="150" width="120" height="72" fill="#d6a77a" stroke="#7c2d12" stroke-width="4"/><path d="M80 152 L150 110 L220 152 Z" fill="#b45309"/><text x="115" y="200" font-size="30" text-anchor="middle">🦒</text><text x="170" y="200" font-size="30" text-anchor="middle">🐘</text><path d="M60 120 A90 90 0 0 1 240 120" fill="none" stroke="#f472b6" stroke-width="6" opacity=".6"/>`,
   };
   for (const L of LUGARES) {
     const b = document.createElement('button');
@@ -718,6 +864,7 @@ function irA(k) { E.cam[E.esc] = camX; E.esc = k; guardar(); construir(); di(...
 
 // ---------- Cada cosa en el dibujo ----------
 function zDe(e) {
+  if (CAT[e.k]?.secreto) return 3;   // detrás de los muebles
   if (e.k === 'per' || CAT[e.k]?.t === 'mascota') return 40 + Math.round(e.y / 100);
   const c = CAT[e.k];
   return c.piso ? 2 : c.pegado ? 4 : c.frente ? 46 : c.t === 'cosa' ? 48 : c.contenedor ? 12 : 10;
@@ -739,7 +886,11 @@ function dibujarElem(e, el = elems.get(e.id)) {
     el.innerHTML = `<div class="cuerpo" style="width:${cw}px;height:${ch}px;${acostado ? `left:${(ch - cw) / 2}px;top:${(cw - ch) / 2}px;transform:rotate(-90deg)` : ''}">${svgPersonaje(e)}</div>`;
   } else {
     const c = CAT[e.k];
-    el.innerHTML = c.emo ? `<span class="emo" style="font-size:${c.h * 0.9}px">${c.emo}</span>` : c.svg(e);
+    el.innerHTML = (e.emo || c.emo) ? `<span class="emo" style="font-size:${c.h * 0.9}px">${e.emo || c.emo}</span>` : c.svg(e);
+    if (e.k === 'pizarron') prepararPizarron(e, el);
+    el.classList.toggle('sirena-on', e.k === 'ambulancia' && !!e.on);
+    el.classList.toggle('secreto', !!c.secreto);
+    el.style.pointerEvents = e.k === 'rayos_x' ? 'none' : '';   // va delante del personaje: el dedo lo atraviesa para tomarlo
     el.classList.toggle('tele-on', e.k === 'tele' && !!e.on);
     el.classList.toggle('estufa-on', e.k === 'estufa' && !!e.on);
     el.classList.toggle('abierto', (e.k === 'refri' || e.k === 'ropero') && !!e.on);
@@ -826,6 +977,9 @@ function soltarEn(e, x, y) {
       const m = ent(a.id);
       if (CAT[m.k].estilista) abrirEstilista(e);
       if (CAT[m.k].columpio) { actualizarColumpios(); sfx.risa(); }
+      if (m.k === 'bascula') pesar(e);
+      if (m.k === 'rayos_x') actualizarMaquinas(true);
+      if (m.k === 'tina' && e.curitas) { e.curitas = 0; dibujarElem(e); colocar(e); }
       if (m.k === 'tina') { sfx.agua(); burbuja(e, '🫧'); } else if (CAT[m.k].asientos[a.i].pose === 'acostado') burbuja(e, E.noche ? '💤' : '😴');
       guardar(); return;
     }
@@ -873,6 +1027,11 @@ function tocar(e) {
     if (e.on) di(c.es, c.en);
     guardar(); return;
   }
+  if (e.k === 'secreto') { encontrarSecreto(e); return; }
+  if (e.k === 'pizarron') { const L = LETRAS_PIZ[(e.letra || 0) % LETRAS_PIZ.length]; sfx.pop(); di(`${L[0]} de ${L[2]}`, `${L[0]} for ${L[4]}`); return; }
+  if (e.k === 'abaco') { e.cuenta = (e.cuenta || 0) % 10 + 1; dibujarElem(e); colocar(e); tono(500 + e.cuenta * 60, 0, 0.12, 'triangle', 0.12); decir([{ l: E.idioma === 'en' ? 'en' : 'es', t: String(e.cuenta) }]); guardar(); return; }
+  if (e.k === 'globo_tierra') { el.classList.remove('brinca'); void el.offsetWidth; el.classList.add('brinca'); sfx.pop(); di('La Tierra, nuestro planeta. ¡Dios hizo el mundo!', 'The Earth, our planet. God made the world!'); return; }
+  if (e.k === 'ambulancia') { e.on = !e.on; dibujarElem(e); colocar(e); if (e.on) for (let k = 0; k < 8; k++) tono(k % 2 ? 660 : 880, k * 0.35, 0.33, 'triangle', 0.07); di(c.es, c.en); guardar(); return; }
   if (e.k === 'cabina') { abrirCreador(e); return; }
   if (c.t === 'mascota') { SONIDO_MASCOTA[e.k](); burbuja(e, '❤️'); el.classList.remove('brinca'); void el.offsetWidth; el.classList.add('brinca'); di(c.es, c.en); return; }
   if (e.k === 'piano') { tocarPiano(e); return; }
@@ -1004,6 +1163,76 @@ $('cobroMoneda').onclick = () => {
   setTimeout(() => { $('cobro').classList.remove('abierta'); cobro = null; }, 2600);
 };
 $('cobroListo').onclick = () => { $('cobro').classList.remove('abierta'); cobro = null; };
+
+// ---------- Escuela: pizarrón para dibujar con el dedo y aprender letras ----------
+let colorTiza = '#f8fafc';
+function prepararPizarron(e, el) {
+  const cv = document.createElement('canvas'); cv.className = 'tiza'; cv.width = 1064; cv.height = 512;
+  cv.style.cssText = 'position:absolute;left:16px;top:16px;width:548px;height:268px;touch-action:none';
+  el.appendChild(cv);
+  const boton = (txt, x, fn) => { const b = document.createElement('button'); b.className = 'botonPiz'; b.textContent = txt; b.style.left = x + 'px'; b.onclick = ev => { ev.stopPropagation(); audio(); fn(b); }; el.appendChild(b); };
+  boton('🔤', 330, () => { e.letra = ((e.letra || 0) + 1) % LETRAS_PIZ.length; dibujarElem(e); colocar(e); sfx.pop(); const L = LETRAS_PIZ[e.letra]; di(`${L[0]} de ${L[2]}`, `${L[0]} for ${L[4]}`); guardar(); });
+  boton('🖍️', 390, () => { colorTiza = colorTiza === '#f8fafc' ? '#fde047' : colorTiza === '#fde047' ? '#f9a8d4' : '#f8fafc'; sfx.pop(); });
+  boton('🧽', 450, () => { cv.getContext('2d').clearRect(0, 0, cv.width, cv.height); sfx.agua(); });
+}
+function puntoTiza(cv, ev) { const r = cv.getBoundingClientRect(); return [(ev.clientX - r.left) / r.width * cv.width, (ev.clientY - r.top) / r.height * cv.height]; }
+
+// ---------- Doctor: báscula, rayos X y herramientas ----------
+function pesar(p) {
+  p.peso ||= { adulto: 55 + azar(30), nino: 18 + azar(14), bebe: 7 + azar(5) }[p.tam];
+  [523, 659, 784].forEach((f, i) => tono(f, i * 0.12, 0.15, 'triangle', 0.1));
+  setTimeout(() => { burbuja(p, `${p.peso} kg`); di(`Pesas ${p.peso} kilos.`, `You weigh ${p.peso} kilograms.`); }, 400);
+  guardar();
+}
+function actualizarMaquinas(sonar) {
+  for (const m of enEscena().filter(o => o.k === 'rayos_x')) {
+    const ocupada = enEscena().some(o => o.k === 'per' && o.asiento?.id === m.id);
+    if (!!m.on === ocupada) continue;
+    m.on = ocupada; dibujarElem(m); colocar(m);
+    if (ocupada && sonar) { for (let k = 0; k < 6; k++) tono(120 + k * 8, k * 0.08, 0.1, 'sawtooth', 0.04); di('¡Mira tus huesos!', 'Look at your bones!'); }
+  }
+}
+function usarHerramienta(p, h) {
+  E.ents = E.ents.filter(o => o !== h); elems.get(h.id)?.remove(); elems.delete(h.id);   // regresa a su charola
+  if (h.k === 'curita') {
+    p.curitas = Math.min(3, (p.curitas || 0) + 1); dibujarElem(p); colocar(p); burbuja(p, '😊'); sfx.pop();
+    di('¡Listo! ¿Te sientes mejor?', 'All done! Feeling better?');
+  } else if (h.k === 'termometro') {
+    burbuja(p, '36°'); [880, 988].forEach((f, i) => tono(f, i * 0.2, 0.15, 'sine', 0.1));
+    di('Tienes 36 grados. ¡Estás sano!', 'Your temperature is normal. You are healthy!');
+  } else {
+    for (let k = 0; k < 4; k++) { tono(70, k * 0.6, 0.14, 'sine', 0.35); tono(58, k * 0.6 + 0.18, 0.14, 'sine', 0.3); }
+    burbuja(p, '❤️'); di('Pum, pum. ¡Tu corazón está fuerte!', 'Thump, thump. Your heart is strong!');
+  }
+  guardar();
+}
+
+// ---------- Secretos escondidos y su álbum ----------
+function encontrarSecreto(e) {
+  const s = SECRETOS.find(x => x.sid === e.sid); if (!s) return;
+  E.secretos.push(s.sid);
+  E.ents = E.ents.filter(o => o !== e);
+  burbuja(e, '✨'); burbuja(e, s.emo);
+  setTimeout(() => { elems.get(e.id)?.remove(); elems.delete(e.id); }, 150);
+  [523, 659, 784, 1047, 1319, 1568].forEach((f, i) => tono(f, i * 0.08, 0.25, 'triangle', 0.12));
+  toast(`🔎 ${T(`¡Encontraste ${s.es}!`, `You found ${s.en}!`)}  (${E.secretos.length}/${SECRETOS.length})`);
+  di(`¡Encontraste ${s.es}!`, `You found ${s.en}!`); guardar();
+}
+$('bSecretos').onclick = () => {
+  audio(); sfx.pop();
+  const g = $('albumSecretos'); g.innerHTML = '';
+  $('tituloAlbum').textContent = `🔎 ${T('Secretos', 'Secrets')}: ${E.secretos.length} / ${SECRETOS.length}`;
+  for (const s of SECRETOS) {
+    const ya = E.secretos.includes(s.sid), lugar = LUGARES.find(L => L.k === s.esc);
+    const b = document.createElement('button'); b.className = 'fichaSecreto' + (ya ? '' : ' no');
+    b.innerHTML = `<span>${ya ? s.emo : '❓'}</span><small>${ya ? T(s.es, s.en) : T(lugar.es, lugar.en)}</small>`;
+    b.onclick = () => { sfx.pop(); ya ? di(s.es, s.en) : di(`Hay un secreto en: ${lugar.es}. ¡Busca detrás de los muebles!`, `There is a secret at: ${lugar.en}. Look behind the furniture!`); };
+    g.appendChild(b);
+  }
+  $('album').classList.add('abierta');
+  if (!E.secretos.length) di('Hay secretos escondidos detrás de los muebles. ¡Muévelos para buscarlos!', 'There are secrets hidden behind the furniture. Move it to look for them!');
+};
+$('cerrarAlbum').onclick = () => $('album').classList.remove('abierta');
 
 // ---------- Parque: columpio, resbaladilla y mascotas ----------
 function actualizarColumpios() {   // el columpio se mece con quien está sentado
@@ -1203,6 +1432,9 @@ const DESDE_MOCHILA = 'mochila';
 function inicioToque(e) {
   audio();
   if (e.target.closest('.lugar')) return;
+  if (e.target.closest('.botonPiz')) return;
+  const tiza = e.target.closest('.tiza');
+  if (tiza) { toque = { tiza, ultimo: puntoTiza(tiza, e) }; try { vista.setPointerCapture(e.pointerId); } catch {} return; }
   const elEnt = e.target.closest('.ent');
   if (modoPintar && !elEnt) { pintar(e.target); return; }
   if (elEnt) {
@@ -1219,6 +1451,7 @@ function levantar(en) {
   en.sobre = null;
   if (estilo?.p === en) cerrarEstilista();
   if (elems.get(en.id)?.classList.contains('columpiando')) actualizarColumpios();
+  if (ent(en.asiento?.id)?.k === 'rayos_x' || enEscena().some(o => o.k === 'rayos_x' && o.on)) setTimeout(actualizarMaquinas, 0);
   elems.get(en.id).classList.add('levantado'); elems.get(en.id).classList.remove('cae', 'flota');
   sfx.levantar();
   $('basura').classList.toggle('ver', en.k !== 'per');
@@ -1226,6 +1459,7 @@ function levantar(en) {
 function movToque(e) {
   if (!toque) return;
   ultimoPuntero = [e.clientX, e.clientY];
+  if (toque.tiza) { const p = puntoTiza(toque.tiza, e), g = toque.tiza.getContext('2d'); g.strokeStyle = colorTiza; g.lineWidth = 10; g.lineCap = 'round'; g.beginPath(); g.moveTo(...toque.ultimo); g.lineTo(...p); g.stroke(); toque.ultimo = p; return; }
   if (toque.pan) { camX = toque.cam0 - (e.clientX - toque.x0) / S; aplicarCam(); return; }
   const en = ent(toque.id); if (!en) return;
   if (!toque.arrastrando && toque.fijo) {   // lo fijo no se mueve: de una caja del mercado sale uno nuevo; si no, se desliza el lugar
@@ -1255,6 +1489,7 @@ function sobreBasura() { if (!$('basura').classList.contains('ver')) return fals
 function finToque() {
   if (!toque) return;
   const t = toque; toque = null;
+  if (t.tiza) return;
   if (t.pan) { E.cam[E.esc] = camX; return; }
   const en = ent(t.id); if (!en) return;
   if (!t.arrastrando) { tocar(en); return; }
@@ -1263,6 +1498,7 @@ function finToque() {
   const [mx, my] = aMundo(...ultimoPuntero);
   if (ultimoPuntero[1] > innerHeight - 84) { aMochila(en); return; }
   if (en.k !== 'per' && ultimoEnBasura) { borrar(en); return; }
+  if (CAT[en.k]?.herramienta) { const p = personajeEn(mx, my, null); if (p) { usarHerramienta(p, en); return; } }
   if (CAT[en.k]?.prenda) { const p = personajeEn(mx, my, null); if (p) { vestir(p, en); return; } }
   if (CAT[en.k]?.comida && !utensilioEn(mx, my, en)) { const m = mascotaEn(mx, my); if (m) { comerMascota(m, en); return; } }
   if (CAT[en.k]?.t === 'cosa' && CAT[en.k].comida) {   // ingredientes a la olla o a la licuadora
