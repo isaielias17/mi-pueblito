@@ -3,7 +3,9 @@
 Un pueblito para jugar libremente, sin reglas ni metas, al estilo de los juegos de "casita": arrastras a los personajes y las cosas con el dedo e inventas tus propias historias. Bilingüe (español / English). Sin anuncios, sin chat y sin internet.
 
 ## Cómo se juega
-- **🗺️ El pueblo:** toca un lugar para entrar. Están abiertos la **Casa**, el **Mercado** y el **Salón y la tienda de ropa**; la iglesia con el parque viene pronto.
+- **🗺️ El pueblo:** toca un lugar para entrar: la **Casa**, el **Mercado**, el **Salón y la tienda de ropa** y el **Parque y la iglesia**.
+- **🌳 El parque:** sienta a alguien en el **columpio** y se mece; suéltalo arriba de la **resbaladilla** y baja deslizándose. Hay una banca, un árbol y la casita del perro. **4 mascotas** (perro, gato, conejo y perico): tócalas y hacen su sonido; dales comida y se la comen.
+- **⛪ La iglesia:** bancas para sentarse, el púlpito con la Biblia 📖 (lee versículos), la cruz y los vitrales. La **campana** suena al tocarla y el **piano** toca "Cristo me ama"; los personajes que estén en la tarima del **coro** cantan 🎵.
 - **💇 El salón:** sienta a un personaje en el sillón y elige su peinado (corto, largo, coletas, trenza, chongo, rizado, afro, cresta o calvo), el color de pelo (12, también rosa, azul, morado y verde) y un accesorio (lentes, gorra, moño, corona o flor).
 - **👗 La tienda de ropa:** arrastra una camisa, un vestido, un pantalón o un accesorio desde el perchero hasta un personaje y se lo pone. Ponerle el mismo accesorio otra vez se lo quita.
 - **✨ Personajes nuevos:** en la cabina elige grande, niño o bebé y el tono de piel, ¡y aparece alguien nuevo! Así puedes crear a toda tu familia (hasta 20 personajes).
