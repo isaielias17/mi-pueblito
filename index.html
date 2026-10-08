@@ -102,6 +102,21 @@
   .btn { background: #f1f5f9; border-radius: 999px; padding: 10px 16px; font-weight: 700; }
   .btn.principal { background: #1f2937; color: #fff; }
   .btn.peligro { background: #fee2e2; color: #b91c1c; }
+  .agua { position: absolute; background: linear-gradient(#38bdf855, #0369a155); pointer-events: none; z-index: 47; border-top: 6px solid #e0f2fe99; }
+  .nadando .cuerpo { animation: nada 1.6s ease-in-out infinite alternate; }
+  @keyframes nada { from { transform: translateY(0) rotate(-3deg); } to { transform: translateY(-10px) rotate(3deg); } }
+  .flotando > svg { animation: nada 2.2s ease-in-out infinite alternate; }
+  .pez .emo { animation: nadarPez 3.5s ease-in-out infinite alternate; }
+  @keyframes nadarPez { from { transform: translateX(-40px); } to { transform: translateX(40px) translateY(-8px); } }
+  .climaCapa { position: absolute; top: 0; height: 900px; pointer-events: none; z-index: 19; overflow: hidden; }
+  .clima-lluvia { background: repeating-linear-gradient(100deg, transparent 0 22px, #ffffff88 22px 24px, transparent 24px 46px), #47556966; background-size: 46px 120px; animation: llueve .35s linear infinite; }
+  @keyframes llueve { to { background-position: -10px 120px; } }
+  .clima-nieve { background-image: radial-gradient(#fff 3px, transparent 4px), radial-gradient(#fff 2px, transparent 3px); background-size: 90px 90px, 60px 60px; background-position: 0 0, 30px 30px; animation: nieva 4s linear infinite; background-color: #e0f2fe33; }
+  @keyframes nieva { to { background-position: 30px 360px, 50px 240px; } }
+  .suelo-nieve { position: absolute; left: 0; right: 0; top: 742px; height: 34px; background: #f8fafc; border-radius: 20px 20px 0 0; }
+  .charco { position: absolute; top: 762px; width: 180px; height: 22px; margin-left: -90px; border-radius: 50%; background: #60a5fa99; }
+  .hoja { position: absolute; top: -60px; font-size: 40px; animation: cae-hoja linear infinite; font-family: "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif; }
+  @keyframes cae-hoja { 0% { transform: translateY(0) rotate(0); } 50% { transform: translate(40px, 480px) rotate(180deg); } 100% { transform: translate(-20px, 980px) rotate(360deg); } }
   .llegaBus > svg { animation: llegaBus .9s ease-out; }
   @keyframes llegaBus { from { transform: translateX(-1400px); } }
   .seVaBus > svg { animation: seVaBus .9s ease-in forwards; }
@@ -181,6 +196,10 @@
   <div class="filaPanel" id="estColor"></div>
   <div class="filaPanel" id="estAcc"></div>
   <button class="cerrarPanel" id="estCerrar">✖️</button>
+</div>
+<div id="cielo" class="panelAbajo">
+  <div class="filaPanel" id="cieloLista"></div>
+  <button class="cerrarPanel" id="cieloCerrar">✖️</button>
 </div>
 <div id="rutas" class="panelAbajo">
   <div class="filaPanel" id="rutasLista"></div>
@@ -491,7 +510,9 @@ const CAT = {
   ambulancia: { t: 'mueble', w: 340, h: 200, es: 'Ambulancia', en: 'Ambulance',
     svg: e => svg(340, 200, `<rect x="0" y="40" width="250" height="130" rx="14" fill="#f8fafc" stroke="#cbd5e1" stroke-width="4"/><path d="M250 80 H300 Q330 90 340 130 V170 H250 Z" fill="#f8fafc" stroke="#cbd5e1" stroke-width="4"/><path d="M262 90 H296 Q316 98 322 124 H262 Z" fill="#bae6fd"/><rect x="0" y="120" width="340" height="16" fill="#ef4444"/><path d="M110 62 V106 M88 84 H132" stroke="#ef4444" stroke-width="14"/><rect x="100" y="20" width="60" height="22" rx="8" fill="${e.on ? '#ef4444' : '#fca5a5'}" class="sirena"/><circle cx="70" cy="174" r="24" fill="#1f2937"/><circle cx="270" cy="174" r="24" fill="#1f2937"/><circle cx="70" cy="174" r="10" fill="#9ca3af"/><circle cx="270" cy="174" r="10" fill="#9ca3af"/>`) },
   charola: { t: 'mueble', w: 70, h: 56, es: 'Charola', en: 'Tray', fijo: true, pegado: true, fuente: true,
-    svg: e => svg(70, 56, `<rect x="0" y="30" width="70" height="20" rx="6" fill="#cbd5e1"/><text x="35" y="40" font-size="38" text-anchor="middle">${CAT[e.de].emo || '🍕'}</text>`) },
+    svg: e => { const c = CAT[e.de], dib = c.emo ? `<text x="35" y="40" font-size="38" text-anchor="middle">${c.emo}</text>`   // sin emoji: su propio dibujo, chiquito
+                                                : c.svg({ ing: ['tomate', 'queso'] }).replace('width="100%" height="100%"', 'x="5" y="-14" width="60" height="50"');
+      return svg(70, 56, `<rect x="0" y="30" width="70" height="20" rx="6" fill="#cbd5e1"/>${dib}`); } },
   curita: { t: 'cosa', emo: '🩹', es: 'Curita', en: 'Band-aid', herramienta: true },
   termometro: { t: 'cosa', emo: '🌡️', es: 'Termómetro', en: 'Thermometer', herramienta: true },
   estetoscopio: { t: 'cosa', emo: '🩺', es: 'Estetoscopio', en: 'Stethoscope', herramienta: true },
@@ -533,6 +554,59 @@ const CAT = {
   autobus: { t: 'mueble', w: 480, h: 240, es: 'Autobús', en: 'Bus', fijo: true, autobus: true,
     svg: () => { const ps = (E.bus?.pasajeros || []).map(ent).filter(Boolean).slice(0, 5);
       return svg(480, 240, `<rect x="0" y="20" width="480" height="180" rx="30" fill="#facc15" stroke="#ca8a04" stroke-width="5"/>${[0, 1, 2, 3, 4].map(k => `<rect x="${30 + k * 74}" y="46" width="62" height="64" rx="10" fill="#bae6fd"/>`).join('')}${ps.map((p, k) => cabeza(p).replace('width="100%" height="100%"', `x="${32 + k * 74}" y="48" width="58" height="60"`)).join('')}<rect x="410" y="46" width="52" height="130" rx="8" fill="#93c5fd" stroke="#ca8a04" stroke-width="4"/><rect x="0" y="130" width="400" height="16" fill="#1f2937"/><text x="200" y="176" font-size="26" font-weight="900" text-anchor="middle" fill="#1f2937">🚌 ${ps.length}</text><circle cx="100" cy="204" r="30" fill="#1f2937"/><circle cx="380" cy="204" r="30" fill="#1f2937"/><circle cx="100" cy="204" r="12" fill="#9ca3af"/><circle cx="380" cy="204" r="12" fill="#9ca3af"/>`); } },
+  // Granja (animales con dibujos propios) y huerto
+  vaca: { t: 'mascota', w: 170, h: 130, es: 'Vaca', en: 'Cow', da: 'leche',
+    svg: () => svg(170, 130, `<path class="cola" d="M150 50 Q166 70 158 92" stroke="#1f2937" stroke-width="5" fill="none"/><ellipse cx="100" cy="64" rx="60" ry="36" fill="#f8fafc" stroke="#d1d5db" stroke-width="2"/><ellipse cx="86" cy="52" rx="16" ry="12" fill="#1f2937"/><ellipse cx="124" cy="74" rx="14" ry="10" fill="#1f2937"/><path d="M60 92 V130 M78 94 V130 M120 94 V130 M138 92 V130" stroke="#f8fafc" stroke-width="12"/><path d="M60 124 V130 M78 124 V130 M120 124 V130 M138 124 V130" stroke="#1f2937" stroke-width="12"/><ellipse cx="108" cy="98" rx="12" ry="7" fill="#f9a8d4"/><circle cx="40" cy="48" r="28" fill="#f8fafc" stroke="#d1d5db" stroke-width="2"/><ellipse cx="34" cy="64" rx="20" ry="14" fill="#fbcfe8"/><circle cx="28" cy="64" r="3" fill="#1f2937"/><circle cx="40" cy="64" r="3" fill="#1f2937"/><circle cx="30" cy="42" r="4" fill="#1f2937"/><circle cx="50" cy="42" r="4" fill="#1f2937"/><path d="M20 24 Q14 12 22 8 M58 24 Q66 12 58 8" stroke="#d6a77a" stroke-width="6" fill="none" stroke-linecap="round"/>`) },
+  gallina: { t: 'mascota', w: 90, h: 100, es: 'Gallina', en: 'Hen', da: 'huevo',
+    svg: () => svg(90, 100, `<path d="M38 82 V100 M52 82 V100" stroke="#f59e0b" stroke-width="4"/><path d="M70 40 Q92 30 86 60 Q80 70 70 66" fill="#f8fafc" stroke="#e5e7eb" stroke-width="2"/><ellipse cx="46" cy="60" rx="30" ry="26" fill="#f8fafc" stroke="#e5e7eb" stroke-width="2"/><circle cx="26" cy="30" r="16" fill="#f8fafc" stroke="#e5e7eb" stroke-width="2"/><path d="M18 16 Q22 6 26 14 Q30 4 34 16 Z" fill="#ef4444"/><path d="M10 30 L2 34 L10 38 Z" fill="#f59e0b"/><path d="M14 40 Q12 48 18 46" fill="#ef4444"/><circle cx="22" cy="28" r="3" fill="#1f2937"/><path d="M40 58 Q52 70 64 56" stroke="#e5e7eb" stroke-width="3" fill="none"/>`) },
+  cerdo: { t: 'mascota', w: 130, h: 100, es: 'Cerdito', en: 'Piglet',
+    svg: () => svg(130, 100, `<path class="cola" d="M112 44 q14 -4 8 8 q-6 6 4 8" stroke="#f472b6" stroke-width="4" fill="none"/><ellipse cx="74" cy="56" rx="44" ry="30" fill="#f9a8d4"/><path d="M50 80 V100 M70 82 V100 M88 82 V100 M104 78 V100" stroke="#f472b6" stroke-width="10"/><circle cx="32" cy="46" r="24" fill="#f9a8d4"/><path d="M18 28 L14 12 L28 22 Z M42 24 L48 10 L50 28 Z" fill="#f472b6"/><ellipse cx="18" cy="54" rx="12" ry="9" fill="#f472b6"/><circle cx="14" cy="54" r="2.5" fill="#9d174d"/><circle cx="22" cy="54" r="2.5" fill="#9d174d"/><circle cx="26" cy="40" r="3" fill="#1f2937"/><circle cx="40" cy="40" r="3" fill="#1f2937"/>`) },
+  oveja: { t: 'mascota', w: 130, h: 110, es: 'Oveja', en: 'Sheep',
+    svg: () => svg(130, 110, `<path d="M50 80 V110 M66 82 V110 M88 82 V110 M104 80 V110" stroke="#1f2937" stroke-width="8"/>${[[50, 50], [74, 40], [98, 48], [110, 64], [86, 70], [60, 70], [44, 64], [74, 58]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="20" fill="#f8fafc" stroke="#e5e7eb" stroke-width="2"/>`).join('')}<ellipse cx="28" cy="48" rx="18" ry="22" fill="#374151"/><ellipse cx="12" cy="40" rx="9" ry="5" fill="#374151"/><circle cx="22" cy="44" r="3" fill="#fff"/><circle cx="34" cy="44" r="3" fill="#fff"/><circle cx="30" cy="30" r="9" fill="#f8fafc"/>`) },
+  granero: { t: 'mueble', w: 360, h: 380, es: 'Granero', en: 'Barn', fijo: true,
+    svg: () => svg(360, 380, `<path d="M0 150 L60 40 H300 L360 150 Z" fill="#991b1b"/><rect x="20" y="146" width="320" height="234" fill="#dc2626"/><path d="M120 380 V250 H240 V380" fill="#7f1d1d" stroke="#fff" stroke-width="8"/><path d="M120 250 L240 380 M240 250 L120 380" stroke="#fff" stroke-width="8"/><rect x="140" y="170" width="80" height="54" fill="#fde68a" stroke="#fff" stroke-width="7"/><path d="M60 40 L180 0 L300 40" fill="#7f1d1d"/>`) },
+  paca: { t: 'mueble', w: 140, h: 90, es: 'Paca de paja', en: 'Hay bale', sup: 90,
+    svg: () => svg(140, 90, `<rect x="0" y="0" width="140" height="90" rx="12" fill="#facc15"/><path d="M10 20 H130 M10 45 H130 M10 70 H130" stroke="#ca8a04" stroke-width="4"/><path d="M40 0 V90 M100 0 V90" stroke="#a16207" stroke-width="6"/>`) },
+  arbusto: { t: 'mueble', w: 170, h: 120, es: 'Arbusto', en: 'Bush',
+    svg: () => svg(170, 120, `<circle cx="50" cy="70" r="48" fill="#16a34a"/><circle cx="110" cy="60" r="56" fill="#22c55e"/><circle cx="140" cy="84" r="34" fill="#16a34a"/><circle cx="70" cy="40" r="8" fill="#f472b6"/><circle cx="124" cy="36" r="8" fill="#facc15"/>`) },
+  surco: { t: 'mueble', w: 130, h: 70, es: 'Huerto', en: 'Garden bed', fijo: true, pegado: true,
+    svg: e => { const f = e.fase || 0, c = e.planta ? CAT[e.planta].emo : '';
+      return svg(130, 70, `<ellipse cx="65" cy="58" rx="64" ry="14" fill="#78350f"/><path d="M10 56 Q65 34 120 56" fill="#92400e"/>${f === 1 ? '<text x="65" y="52" font-size="30" text-anchor="middle">🌱</text>' : f === 2 ? '<text x="65" y="52" font-size="40" text-anchor="middle">🌿</text>' : f === 3 ? `<text x="40" y="50" font-size="34" text-anchor="middle">${c}</text><text x="90" y="46" font-size="34" text-anchor="middle">${c}</text><text x="65" y="30" font-size="30" text-anchor="middle">✨</text>` : ''}`); } },
+  regadera: { t: 'cosa', es: 'Regadera', en: 'Watering can', riega: true,
+    svg: () => svg(100, 100, `<path d="M20 40 H70 V88 Q45 98 20 88 Z" fill="#22c55e"/><path d="M70 50 L96 26" stroke="#16a34a" stroke-width="9" stroke-linecap="round"/><path d="M28 40 Q45 14 62 40" fill="none" stroke="#16a34a" stroke-width="7"/><circle cx="96" cy="24" r="6" fill="#16a34a"/>`) },
+  // Zoológico (por ahora con emojis grandes)
+  leon: { t: 'mascota', emo: '🦁', w: 140, h: 140, es: 'León', en: 'Lion' },
+  jirafa: { t: 'mascota', emo: '🦒', w: 170, h: 170, es: 'Jirafa', en: 'Giraffe' },
+  elefante: { t: 'mascota', emo: '🐘', w: 170, h: 170, es: 'Elefante', en: 'Elephant' },
+  mono: { t: 'mascota', emo: '🐒', w: 110, h: 110, es: 'Mono', en: 'Monkey' },
+  pinguino: { t: 'mascota', emo: '🐧', w: 100, h: 100, es: 'Pingüino', en: 'Penguin' },
+  cebra: { t: 'mascota', emo: '🦓', w: 150, h: 150, es: 'Cebra', en: 'Zebra' },
+  pescado: { t: 'cosa', emo: '🐟', es: 'Pescado', en: 'Fish', comida: true },
+  // Playa y mar
+  sombrilla: { t: 'mueble', w: 220, h: 300, es: 'Sombrilla', en: 'Beach umbrella',
+    svg: () => svg(220, 300, `<path d="M110 40 V300" stroke="#78716c" stroke-width="8"/><path d="M0 110 Q110 -30 220 110 Z" fill="#ef4444"/>${[1, 3].map(k => `<path d="M${k * 55 - 10} 110 Q${k * 55 + 18} 20 110 34 Q${k * 55 + 40} 40 ${k * 55 + 45} 110 Z" fill="#fff"/>`).join('')}`) },
+  toalla: { t: 'mueble', w: 260, h: 24, es: 'Toalla', en: 'Towel', piso: true, asientos: [{ dx: 0, dy: 12, pose: 'acostado' }],
+    svg: () => svg(260, 24, `<rect x="0" y="4" width="260" height="20" rx="6" fill="#38bdf8"/>${[0, 1, 2, 3, 4, 5].map(k => `<rect x="${10 + k * 42}" y="4" width="20" height="20" fill="#fde047"/>`).join('')}`) },
+  castillo: { t: 'mueble', w: 260, h: 220, es: 'Castillo de arena', en: 'Sand castle', fijo: true, pegado: true,
+    svg: e => { const n = e.nivel || 0; let s = `<path d="M10 220 Q130 180 250 220 Z" fill="#fcd34d"/>`;
+      if (n >= 1) s += `<rect x="70" y="150" width="120" height="70" fill="#fbbf24"/><path d="M70 150 h20 v-12 h20 v12 h20 v-12 h20 v12 h20 v-12 h20 v12" fill="#fbbf24"/><path d="M118 220 V190 Q130 176 142 190 V220 Z" fill="#b45309"/>`;
+      if (n >= 2) s += `<rect x="30" y="120" width="44" height="100" fill="#f59e0b"/><path d="M30 120 h11 v-10 h11 v10 h11 v-10 h11 v10" fill="#f59e0b"/>`;
+      if (n >= 3) s += `<rect x="186" y="120" width="44" height="100" fill="#f59e0b"/><path d="M186 120 h11 v-10 h11 v10 h11 v-10 h11 v10" fill="#f59e0b"/>`;
+      if (n >= 4) s += `<rect x="108" y="70" width="44" height="82" fill="#fbbf24"/><path d="M130 70 V20" stroke="#78716c" stroke-width="4"/><path d="M132 22 L166 32 L132 44 Z" fill="#ef4444"/>`;
+      return svg(260, 220, s); } },
+  cubeta_arena: { t: 'cosa', emo: '🪣', es: 'Cubeta con arena', en: 'Sand bucket', arena: true },
+  carrito_helado: { t: 'mueble', w: 200, h: 230, es: 'Carrito de helados', en: 'Ice cream cart',
+    svg: () => svg(200, 230, `<path d="M100 0 V60" stroke="#78716c" stroke-width="6"/><path d="M10 64 Q100 -10 190 64 Z" fill="#f9a8d4"/><rect x="20" y="90" width="160" height="100" rx="12" fill="#fff" stroke="#f472b6" stroke-width="5"/><text x="100" y="156" font-size="50" text-anchor="middle">🍦</text><circle cx="50" cy="206" r="22" fill="#1f2937"/><circle cx="150" cy="206" r="22" fill="#1f2937"/>`) },
+  helado: { t: 'cosa', emo: '🍦', es: 'Helado', en: 'Ice cream', comida: true },
+  palmera: { t: 'mueble', w: 240, h: 460, es: 'Palmera', en: 'Palm tree', fijo: true,
+    svg: () => svg(240, 460, `<path d="M120 460 Q100 300 130 120" stroke="#92400e" stroke-width="22" fill="none"/><path d="M130 120 Q60 80 10 140 M130 120 Q200 70 236 130 M130 120 Q90 40 30 40 M130 120 Q170 30 226 44 M130 120 Q130 60 120 10" stroke="#16a34a" stroke-width="22" fill="none" stroke-linecap="round"/><circle cx="120" cy="130" r="12" fill="#78350f"/><circle cx="140" cy="132" r="12" fill="#78350f"/>`) },
+  barco: { t: 'mueble', w: 300, h: 230, es: 'Barco', en: 'Boat', asientos: [{ dx: -50, dy: 0, pose: 'sentado', y0: -70 }, { dx: 60, dy: 0, pose: 'sentado', y0: -70 }],
+    svg: () => svg(300, 230, `<path d="M150 20 V150" stroke="#78716c" stroke-width="6"/><path d="M156 24 L250 130 H156 Z" fill="#f8fafc" stroke="#cbd5e1" stroke-width="3"/><path d="M0 150 H300 L260 230 H40 Z" fill="#1d4ed8"/><path d="M14 166 H286" stroke="#f8fafc" stroke-width="8"/>`) },
+  cofre: { t: 'mueble', w: 150, h: 110, es: 'Cofre del tesoro', en: 'Treasure chest', fijo: true,
+    svg: e => svg(150, 110, `${e.on ? '<path d="M0 50 L20 0 H130 L150 50 Z" fill="#92400e"/><text x="75" y="58" font-size="40" text-anchor="middle">💎</text>' : '<path d="M0 50 Q75 0 150 50 Z" fill="#92400e"/>'}<rect x="0" y="48" width="150" height="62" rx="6" fill="#b45309"/><path d="M0 60 H150 M30 48 V110 M120 48 V110" stroke="#facc15" stroke-width="6"/><rect x="64" y="56" width="22" height="24" rx="4" fill="#facc15"/>`) },
+  pez: { t: 'mascota', emo: '🐠', w: 90, h: 90, es: 'Pez', en: 'Fish', fijo: true, nada: true },
+  muneco_nieve: { t: 'mueble', w: 150, h: 230, es: 'Muñeco de nieve', en: 'Snowman',
+    svg: () => svg(150, 230, `<circle cx="75" cy="170" r="58" fill="#f8fafc" stroke="#e2e8f0" stroke-width="3"/><circle cx="75" cy="78" r="42" fill="#f8fafc" stroke="#e2e8f0" stroke-width="3"/><circle cx="62" cy="70" r="5" fill="#1f2937"/><circle cx="88" cy="70" r="5" fill="#1f2937"/><path d="M75 80 L104 88 L75 92 Z" fill="#f97316"/><path d="M40 112 Q75 128 110 112" stroke="#ef4444" stroke-width="12" fill="none"/><path d="M40 26 H110 V36 H40 Z M52 0 H98 V30 H52 Z" fill="#1f2937"/>${[150, 175, 200].map(y => `<circle cx="75" cy="${y}" r="5" fill="#1f2937"/>`).join('')}`) },
   // Mascotas (dibujos propios)
   perro: { t: 'mascota', w: 130, h: 100, es: 'Perro', en: 'Dog',
     svg: () => svg(130, 100, `<path class="cola" d="M112 50 Q130 30 124 18" stroke="#92400e" stroke-width="9" fill="none" stroke-linecap="round"/><ellipse cx="78" cy="58" rx="42" ry="26" fill="#d97706"/><rect x="48" y="70" width="12" height="30" rx="5" fill="#b45309"/><rect x="92" y="70" width="12" height="30" rx="5" fill="#b45309"/><circle cx="34" cy="40" r="28" fill="#d97706"/><ellipse cx="14" cy="34" rx="10" ry="20" fill="#92400e"/><ellipse cx="54" cy="30" rx="9" ry="18" fill="#92400e"/><circle cx="26" cy="36" r="4" fill="#1f2937"/><circle cx="42" cy="36" r="4" fill="#1f2937"/><ellipse cx="33" cy="50" rx="8" ry="6" fill="#1f2937"/><path d="M27 58 Q33 64 39 58" stroke="#1f2937" stroke-width="3" fill="none"/>`) },
@@ -561,6 +635,9 @@ const SECRETOS = [
   { sid: 'hueso', esc: 'iglesia', x: 378, y: 760, emo: '🦴', es: 'el hueso del perro', en: "the dog's bone" },
   { sid: 'hamster', esc: 'escuela', x: 1520, y: 760, emo: '🐹', es: 'el hámster de la clase', en: 'the class hamster' },
   { sid: 'osito_doc', esc: 'doctor', x: 2238, y: 760, emo: '🧸', es: 'un osito perdido', en: 'a lost teddy bear' },
+  { sid: 'pollito', esc: 'granja', x: 1408, y: 760, emo: '🐣', es: 'un pollito', en: 'a baby chick' },
+  { sid: 'mariposa', esc: 'granja', x: 2448, y: 760, emo: '🦋', es: 'una mariposa', en: 'a butterfly' },
+  { sid: 'concha', esc: 'playa', x: 246, y: 760, emo: '🐚', es: 'una concha de mar', en: 'a seashell' },
 ];
 function dibujoPrenda(tipo, c) {   // dibujos propios de la ropa (100 × 100)
   if (tipo === 'camisa') return `<path d="M30 8 L42 4 Q50 14 58 4 L70 8 L94 30 L80 44 L74 38 L74 96 L26 96 L26 38 L20 44 L6 30 Z" fill="${c}" stroke="#0003" stroke-width="2"/>`;
@@ -585,6 +662,19 @@ function recetaOlla(d) {
 }
 for (const c of Object.values(CAT)) if (c.t === 'cosa') { c.w = 66; c.h = 66; }
 Object.assign(CAT.pizza, { w: 110, h: 48 }); Object.assign(CAT.fuego, { w: 80, h: 80 });
+const DATOS_ANIMAL = {
+  leon: ['El león es el rey de la selva. ¡Ruge muy fuerte!', 'The lion is king of the jungle. It roars very loud!'],
+  jirafa: ['La jirafa es el animal más alto del mundo.', 'The giraffe is the tallest animal in the world.'],
+  elefante: ['El elefante usa su trompa como una mano.', 'The elephant uses its trunk like a hand.'],
+  mono: ['Al mono le encantan los plátanos.', 'Monkeys love bananas.'],
+  pinguino: ['El pingüino no vuela, ¡pero nada muy rápido!', "Penguins can't fly, but they swim very fast!"],
+  cebra: ['Cada cebra tiene rayas diferentes.', 'Every zebra has different stripes.'],
+  vaca: ['La vaca nos da leche.', 'The cow gives us milk.'], gallina: ['La gallina pone huevos.', 'The hen lays eggs.'],
+};
+CAT.tesoro = { t: 'cosa', es: 'Tesoro', en: 'Treasure', w: 66, h: 66 };
+const NOMBRE_MAR = { '🐙': ['Pulpo', 'Octopus'], '🦀': ['Cangrejo', 'Crab'], '🐢': ['Tortuga de mar', 'Sea turtle'], '🐬': ['Delfín', 'Dolphin'],
+                     '🐡': ['Pez globo', 'Pufferfish'], '🐠': ['Pez tropical', 'Tropical fish'], '🐟': ['Pez', 'Fish'] };
+const SIEMBRA = ['zanahoria', 'tomate', 'maiz', 'papa', 'lechuga', 'fresa'];   // lo que se puede sembrar en el huerto
 const ING_PIZZA = ['tomate', 'queso', 'pina', 'aceituna', 'champinon', 'chile', 'albahaca'];
 CAT.p_casco = { t: 'cosa', prenda: 'casco', es: 'Casco de bombero', en: 'Fire helmet', w: 66, h: 66 };
 CAT.p_policia = { t: 'cosa', prenda: 'policia', es: 'Gorra de policía', en: 'Police cap', w: 66, h: 66 };
@@ -615,6 +705,33 @@ const PUESTOS = [
 const ESTANTE = 470, MOSTRADOR_P = 620;
 ESCENAS.mercado.superficies = PUESTOS.map(p => ({ x0: p.x, x1: p.x + 420, y: MOSTRADOR_P }));   // los mostradores de los puestos
 // Salón (peinar) y tienda de ropa (arrastrar la ropa al personaje)
+// Granja + zoológico, y playa + mar (en el mar se nada y se bucea)
+const MAR_X0 = 1300, SUPERFICIE = 330;
+ESCENAS.granja = { w: 2600, nombre: ['La granja y el zoológico', 'The farm & zoo'], exterior: [[0, 2600]], superficies: [{ x0: 920, x1: 1200, y: 520 }, { x0: 1410, x1: 1600, y: 560 }] };
+ESCENAS.playa = { w: 2600, nombre: ['La playa y el mar', 'The beach & sea'], exterior: [[0, 2600]] };
+function granjaInicial(id) {
+  const ents = [], m = (k, x, y = PISO, extra = {}) => { const e = { id: id++, k, esc: 'granja', x, y, ...extra }; ents.push(e); return e; };
+  m('granero', 210); m('cerdo', 330); m('oveja', 470); m('vaca', 640); m('gallina', 800);
+  [960, 1100, 1240].forEach((x, i) => m('surco', x, PISO, i === 0 ? { planta: 'zanahoria', fase: 1 } : {}));
+  [['regadera', 950], ['zanahoria', 1020], ['tomate', 1090], ['maiz', 1160]].forEach(([k, x]) => m('charola', x, 520, { de: k }));
+  m('paca', 1350);
+  m('leon', 1500); m('cebra', 1690); m('jirafa', 1880); m('elefante', 2080); m('mono', 2250, PISO - 90); m('pinguino', 2380); m('arbusto', 2520);
+  [['platano', 1440], ['pescado', 1505], ['lechuga', 1570]].forEach(([k, x]) => m('charola', x, 560, { de: k }));
+  const per = (look, extra) => ents.push({ id: id++, k: 'per', esc: 'granja', x: 0, y: 0, pose: 'parado', mira: 1, ...look, ...extra });
+  per({ tam: 'adulto', piel: '#c68642', pelo: 'corto', colorPelo: '#4a2511', ropa: 'camisa', color: '#ef4444', pantalon: '#1e40af', acc: 'gorra', accCol: '#facc15' }, { x: 880, y: PISO });
+  per({ tam: 'adulto', piel: '#f1c27d', pelo: 'trenza', colorPelo: '#c2410c', ropa: 'camisa', color: '#16a34a', pantalon: '#78350f' }, { x: 1400, y: PISO, mira: 1 });
+  return { ents, sigId: id };
+}
+function playaInicial(id) {
+  const ents = [], m = (k, x, y = PISO, extra = {}) => { const e = { id: id++, k, esc: 'playa', x, y, ...extra }; ents.push(e); return e; };
+  m('carrito_helado', 150); m('sombrilla', 400); const toalla = m('toalla', 600); m('castillo', 850, PISO, { nivel: 1 }); m('charola', 1010, PISO, { de: 'cubeta_arena' }); m('palmera', 1160);
+  m('barco', 1560, SUPERFICIE + 70, { flota: true }); m('cofre', 2380);
+  [['🐠', 1480, 520], ['🐟', 1800, 600], ['🐡', 2080, 460], ['🐙', 2230, 720], ['🦀', 1680, PISO], ['🐢', 1960, 400], ['🐬', 2420, 520]].forEach(([emo, x, y]) => m('pez', x, y, { emo }));
+  const per = (look, extra) => ents.push({ id: id++, k: 'per', esc: 'playa', x: 0, y: 0, pose: 'parado', mira: 1, ...look, ...extra });
+  per({ tam: 'nino', piel: '#e0ac69', pelo: 'coletas', colorPelo: '#1f1300', ropa: 'vestido', color: '#f472b6', pantalon: '#e0ac69', acc: 'lentes', accCol: '#ef4444' }, { asiento: { id: toalla.id, i: 0 } });
+  per({ tam: 'nino', piel: '#8d5524', pelo: 'rizado', colorPelo: '#1f1300', ropa: 'camisa', color: '#facc15', pantalon: '#0ea5e9' }, { x: 1420, y: SUPERFICIE + 190, nadando: true });
+  return { ents, sigId: id };
+}
 // Restaurante (cocina de pizzas + comedor) y bomberos y policía
 ESCENAS.restaurante = { w: 2200, nombre: ['El restaurante', 'The restaurant'], superficies: [{ x0: 330, x1: 830, y: 640 }] };
 ESCENAS.bomberos = { w: 2400, nombre: ['Bomberos y policía', 'Fire & police'] };
@@ -719,8 +836,8 @@ const LUGARES = [
   { k: 'doctor', es: 'Doctor', en: 'Doctor', listo: true, ico: '🏥' },
   { k: 'restaurante', es: 'Restaurante', en: 'Restaurant', listo: true, ico: '🍕' },
   { k: 'bomberos', es: 'Bomberos y policía', en: 'Fire & police', listo: true, ico: '🚒' },
-  { k: 'granja', es: 'Granja y zoológico', en: 'Farm & zoo' },
-  { k: 'playa', es: 'Playa y mar', en: 'Beach & sea' },
+  { k: 'granja', es: 'Granja y zoológico', en: 'Farm & zoo', listo: true, ico: '🐄' },
+  { k: 'playa', es: 'Playa y mar', en: 'Beach & sea', listo: true, ico: '🏖️' },
   { k: 'aeropuerto', es: 'Aeropuerto', en: 'Airport' },
   { k: 'arca', es: 'El arca de Noé', en: "Noah's ark" },
 ];
@@ -760,7 +877,7 @@ function migrar() {
   if (!E.ents.some(e => e.esc === 'mercado')) { const m = mercadoInicial(E.sigId); E.ents.push(...m.ents); E.sigId = m.sigId; }
   if (!E.ents.some(e => e.esc === 'salon')) { const m = salonInicial(E.sigId); E.ents.push(...m.ents); E.sigId = m.sigId; }
   if (!E.ents.some(e => e.esc === 'iglesia')) { const m = iglesiaInicial(E.sigId); E.ents.push(...m.ents); E.sigId = m.sigId; }
-  for (const [k, f] of [['escuela', escuelaInicial], ['doctor', doctorInicial], ['restaurante', restauranteInicial], ['bomberos', bomberosInicial]]) if (!E.ents.some(e => e.esc === k)) { const m = f(E.sigId); E.ents.push(...m.ents); E.sigId = m.sigId; }
+  for (const [k, f] of [['escuela', escuelaInicial], ['doctor', doctorInicial], ['restaurante', restauranteInicial], ['bomberos', bomberosInicial], ['granja', granjaInicial], ['playa', playaInicial]]) if (!E.ents.some(e => e.esc === k)) { const m = f(E.sigId); E.ents.push(...m.ents); E.sigId = m.sigId; }
   E.secretos ||= [];
   E.bus ||= { pasajeros: [] };
   for (const s of SECRETOS) if (!E.secretos.includes(s.sid) && !E.ents.some(e => e.sid === s.sid)) E.ents.push({ id: E.sigId++, k: 'secreto', esc: s.esc, x: s.x, y: s.y, sid: s.sid, emo: s.emo });
@@ -804,11 +921,12 @@ function construir() {
   document.body.classList.toggle('enMapa', E.esc === 'mapa');
   ['bMuebles', 'bPintar', 'bBus'].forEach(id => $(id).style.display = E.esc === 'mapa' ? 'none' : '');
   cerrarCajones();
-  ({ mapa: construirMapa, mercado: construirMercado, salon: construirSalon, iglesia: construirIglesia, escuela: construirEscuela, doctor: construirDoctor, restaurante: construirRestaurante, bomberos: construirBomberos }[E.esc] || construirCasa)();
+  ({ mapa: construirMapa, mercado: construirMercado, salon: construirSalon, iglesia: construirIglesia, escuela: construirEscuela, doctor: construirDoctor, restaurante: construirRestaurante, bomberos: construirBomberos, granja: construirGranja, playa: construirPlaya }[E.esc] || construirCasa)();
   $('bPintar').style.display = E.esc === 'casa' ? '' : 'none';
   const oscuro = document.createElement('div'); oscuro.id = 'oscuro'; lienzo.appendChild(oscuro);
   lienzo.classList.toggle('noche', E.noche);
   for (const e of enEscena()) crearElem(e);
+  aplicarClima();
   for (const e of enEscena()) {   // lo que está encima de un mueble se mueve con él
     if (e.k === 'per' || e.sobre || e.dueno || CAT[e.k].pegado) continue;
     const d = superficieBajo(e, e.x, e.y);
@@ -867,6 +985,36 @@ function construirSalon() {
 }
 function letrero(x, texto, borde, color) {
   return `<rect x="${x - 170}" y="70" width="340" height="60" rx="16" fill="#fff" stroke="${borde}" stroke-width="5"/><text x="${x}" y="112" font-size="30" font-weight="900" text-anchor="middle" fill="${color}">${texto}</text>`;
+}
+function construirGranja() {
+  const f = document.createElement('div'), noche = E.noche; f.className = 'fondo';
+  const valla = (x0, x1) => `<path d="M${x0} 700 H${x1} M${x0} 730 H${x1}" stroke="#a16207" stroke-width="8"/>${Array.from({ length: Math.floor((x1 - x0) / 60) + 1 }, (_, k) => `<rect x="${x0 + k * 60 - 5}" y="680" width="10" height="80" fill="#92400e"/>`).join('')}`;
+  f.innerHTML = svg(2600, 900, `<rect width="2600" height="760" fill="${noche ? '#312e81' : '#bae6fd'}"/>
+    <path d="M0 620 Q400 500 800 600 Q1200 490 1600 590 Q2000 500 2600 580 V760 H0 Z" fill="#86efac"/><rect y="760" width="2600" height="140" fill="#4ade80"/>
+    ${noche ? '' : [[300, 120], [1000, 90], [1800, 140], [2400, 100]].map(([x, y]) => `<g transform="translate(${x} ${y})"><ellipse rx="80" ry="34" fill="#fff"/><ellipse cx="-50" cy="10" rx="50" ry="26" fill="#fff"/><ellipse cx="50" cy="10" rx="54" ry="28" fill="#fff"/></g>`).join('')}
+    <rect x="920" y="520" width="280" height="14" rx="5" fill="#92400e"/><path d="M935 534 V760 M1185 534 V760" stroke="#92400e" stroke-width="10"/>
+    <rect x="1410" y="560" width="190" height="14" rx="5" fill="#64748b"/><path d="M1425 574 V760 M1585 574 V760" stroke="#64748b" stroke-width="10"/>
+    <ellipse cx="330" cy="768" rx="90" ry="14" fill="#78350f" opacity=".6"/><ellipse cx="2380" cy="770" rx="80" ry="16" fill="#38bdf8"/>
+    <path d="M2200 760 V560 M2200 600 Q2260 590 2290 640" stroke="#92400e" stroke-width="14" fill="none"/><circle cx="2200" cy="530" r="60" fill="#16a34a"/>
+    ${valla(1610, 1780)}${valla(1790, 1980)}${valla(1990, 2160)}
+    <rect x="1386" y="0" width="16" height="620" fill="#e7d3b5" opacity=".7"/>
+    ${letrero(700, '🐄 ' + T('Granja', 'Farm').split(' · ')[0], '#dc2626', '#7f1d1d')}${letrero(2000, '🦁 ' + T('Zoológico', 'Zoo').split(' · ')[0], '#16a34a', '#14532d')}`);
+  lienzo.appendChild(f);
+}
+function construirPlaya() {
+  const f = document.createElement('div'), noche = E.noche; f.className = 'fondo';
+  f.innerHTML = svg(2600, 900, `<rect width="2600" height="900" fill="${noche ? '#312e81' : '#7dd3fc'}"/>
+    <path d="M0 600 Q600 560 1000 620 Q1200 650 1300 720 V900 H0 Z" fill="#fde68a"/>
+    <rect x="${MAR_X0}" y="${SUPERFICIE}" width="${2600 - MAR_X0}" height="${900 - SUPERFICIE}" fill="#0ea5e9"/>
+    <path d="M${MAR_X0} 900 V700 Q1360 640 1300 560 L1300 ${SUPERFICIE}" fill="#fde68a"/>
+    <rect x="${MAR_X0}" y="${PISO}" width="${2600 - MAR_X0}" height="140" fill="#fcd34d"/>
+    ${Array.from({ length: 12 }, (_, k) => `<path d="M${1450 + k * 100} ${PISO} q-10 -50 6 -90 q14 -30 -4 -60" stroke="${k % 3 ? '#16a34a' : '#ec4899'}" stroke-width="10" fill="none" stroke-linecap="round"/>`).join('')}
+    <text x="400" y="140" font-size="80">${noche ? '🌙' : '☀️'}</text>`);
+  lienzo.appendChild(f);
+  // el agua por encima de quien está adentro (se ve buceando) y las olas
+  const agua = document.createElement('div'); agua.className = 'agua';
+  Object.assign(agua.style, { left: MAR_X0 + 'px', top: SUPERFICIE + 'px', width: (2600 - MAR_X0) + 'px', height: (900 - SUPERFICIE) + 'px' });
+  lienzo.appendChild(agua);
 }
 function construirRestaurante() {
   const f = document.createElement('div'); f.className = 'fondo';
@@ -977,6 +1125,9 @@ function zDe(e) {
 function crearElem(e) {
   const el = document.createElement('div');
   el.className = 'ent'; el.dataset.id = e.id;
+  if (e.nadando) el.classList.add('nadando');
+  if (e.flota) el.classList.add('flotando');
+  if (CAT[e.k]?.nada) el.classList.add('pez');
   dibujarElem(e, el);
   lienzo.appendChild(el); elems.set(e.id, el);
   return el;
@@ -1079,6 +1230,10 @@ function soltarEn(e, x, y) {
     if (t) { resbalar(e, t); return; }
     const tb = enTubo(e.x, y);
     if (tb) { bajarTubo(e, tb); return; }
+    if (enAgua(e.x, y) && !buscarAsiento(e, e.x, y)) {   // en el mar: flota o bucea donde lo sueltes
+      e.pose = 'parado'; e.nadando = true; e.y = lim(y, SUPERFICIE + 190, PISO); dibujarElem(e); colocar(e);
+      el.classList.add('nadando'); sfx.agua(); burbuja(e, '🫧'); guardar(); return;
+    }
     const a = buscarAsiento(e, e.x, y);
     if (a) {
       e.asiento = a; colocar(e); sfx.caer();
@@ -1092,6 +1247,10 @@ function soltarEn(e, x, y) {
       guardar(); return;
     }
     e.pose = 'parado'; dibujarElem(e);
+  }
+  if (e.k === 'barco') {   // en el mar el barco flota
+    e.flota = E.esc === 'playa' && e.x > MAR_X0 + 120; el.classList.toggle('flotando', e.flota);
+    if (e.flota) { e.y = SUPERFICIE + 70; colocar(e); sfx.agua(); guardar(); return; }
   }
   if (c?.pegado) { e.y = lim(y, c.h + 60, PISO - 120); colocar(e); sfx.click(); guardar(); return; }
   if (c?.flota) {   // el globo sube hasta el techo
@@ -1154,7 +1313,11 @@ function tocar(e) {
   if (e.k === 'globo_tierra') { el.classList.remove('brinca'); void el.offsetWidth; el.classList.add('brinca'); sfx.pop(); di('La Tierra, nuestro planeta. ¡Dios hizo el mundo!', 'The Earth, our planet. God made the world!'); return; }
   if (e.k === 'ambulancia') { e.on = !e.on; dibujarElem(e); colocar(e); if (e.on) for (let k = 0; k < 8; k++) tono(k % 2 ? 660 : 880, k * 0.35, 0.33, 'triangle', 0.07); di(c.es, c.en); guardar(); return; }
   if (e.k === 'cabina') { abrirCreador(e); return; }
-  if (c.t === 'mascota') { SONIDO_MASCOTA[e.k](); burbuja(e, '❤️'); el.classList.remove('brinca'); void el.offsetWidth; el.classList.add('brinca'); di(c.es, c.en); return; }
+  if (c.t === 'mascota') { tocarAnimal(e, el); return; }
+  if (e.k === 'surco') { cosechar(e); return; }
+  if (e.k === 'carrito_helado') { const n = { id: E.sigId++, k: 'helado', emo: ['🍦', '🍨', '🍧'][azar(3)], esc: E.esc, x: e.x + 140, y: e.y - 160 }; E.ents.push(n); crearElem(n); soltarEn(n, n.x, n.y); [784, 988].forEach((f, i) => tono(f, i * 0.1, 0.15, 'triangle', 0.1)); di('¡Un helado!', 'An ice cream!'); return; }
+  if (e.k === 'cofre') { abrirCofre(e); return; }
+  if (e.k === 'castillo') { sfx.pop(); di(e.nivel >= 4 ? '¡Qué castillo tan grande!' : 'Échale arena con la cubeta.', e.nivel >= 4 ? 'What a big castle!' : 'Add sand with the bucket.'); return; }
   if (e.k === 'piano') { tocarPiano(e); return; }
   if (e.k === 'campana') { el.classList.remove('suena'); void el.offsetWidth; el.classList.add('suena'); [[392, 0], [330, 0.7], [392, 1.4], [330, 2.1]].forEach(([f, t]) => { tono(f, t, 1.6, 'sine', 0.18); tono(f * 2, t, 0.8, 'sine', 0.05); }); di(c.es, c.en); return; }
   if (e.k === 'columpio' || e.k === 'resbaladilla') { sfx.pop(); di(c.es, c.en); return; }
@@ -1296,6 +1459,103 @@ $('cobroMoneda').onclick = () => {
 };
 $('cobroListo').onclick = () => { $('cobro').classList.remove('abierta'); cobro = null; };
 
+// ---------- Granja y zoológico ----------
+function tocarAnimal(e, el) {
+  const c = CAT[e.k];
+  (SONIDO_MASCOTA[e.k] || SONIDO_MASCOTA.generico)(e.k);
+  el.classList.remove('brinca'); void el.offsetWidth; el.classList.add('brinca');
+  if (c.nada) { burbuja(e, '🫧'); di(...(NOMBRE_MAR[e.emo] || [c.es, c.en])); return; }
+  burbuja(e, '❤️');
+  const dato = DATOS_ANIMAL[e.k];
+  dato ? di(`${c.es}. ${dato[0]}`, `${c.en}. ${dato[1]}`) : di(c.es, c.en);
+  if (c.da && (!e.listo || Date.now() > e.listo)) {   // la vaca da leche y la gallina pone un huevo (con calma)
+    e.listo = Date.now() + 4000;
+    const n = { id: E.sigId++, k: c.da, esc: E.esc, x: e.x + (c.w / 2 + 30) * (e.f ? -1 : 1), y: e.y - 80 };
+    E.ents.push(n); crearElem(n); soltarEn(n, n.x, n.y); burbuja(n, '✨'); guardar();
+  }
+}
+const surcoEn = (x, y) => enEscena().find(o => o.k === 'surco' && Math.abs(o.x - x) < 75 && y > o.y - 140 && y < o.y + 20);
+function quitar(o) { E.ents = E.ents.filter(x => x !== o); elems.get(o.id)?.remove(); elems.delete(o.id); }
+function sembrar(s, item) {
+  s.planta = item.k; s.fase = 1; quitar(item); dibujarElem(s); colocar(s);
+  tono(400, 0, 0.1, 'triangle', 0.1); burbuja(s, '🌱');
+  di('¡Sembraste! Ahora riégala con la regadera.', 'You planted it! Now water it with the watering can.'); guardar();
+}
+function regar(s, reg, sinVoz) {
+  if (reg) quitar(reg);
+  s.fase = Math.min(3, (s.fase || 1) + 1); dibujarElem(s); colocar(s);
+  sfx.agua(); burbuja(s, '💧');
+  if (!sinVoz) s.fase === 3 ? di('¡Ya creció! Tócala para cosechar.', 'It grew! Tap it to harvest.') : di('¡Está creciendo!', "It's growing!");
+  guardar();
+}
+function cosechar(s) {
+  if (s.fase !== 3) { sfx.pop(); di(s.planta ? 'Riégala para que crezca.' : 'Siembra una verdura aquí.', s.planta ? 'Water it so it grows.' : 'Plant a vegetable here.'); return; }
+  for (let k = 0; k < 3; k++) { const n = { id: E.sigId++, k: s.planta, esc: E.esc, x: s.x - 50 + k * 50, y: s.y - 120 }; E.ents.push(n); crearElem(n); soltarEn(n, n.x, n.y); }
+  [523, 659, 784, 1047].forEach((f, i) => tono(f, i * 0.08, 0.2, 'triangle', 0.12));
+  di(`¡Cosechaste ${CAT[s.planta].es.toLowerCase()}! Uno, dos, tres.`, `You harvested! One, two, three.`);
+  s.planta = null; s.fase = 0; dibujarElem(s); colocar(s); guardar();
+}
+
+// ---------- Playa y mar ----------
+const enAgua = (x, y) => E.esc === 'playa' && x > MAR_X0 + 40 && y > SUPERFICIE + 30;
+const castilloEn = (x, y) => enEscena().find(o => o.k === 'castillo' && Math.abs(o.x - x) < 140 && y > o.y - 260 && y < o.y + 20);
+function construirCastillo(ca, cubeta) {
+  quitar(cubeta);
+  if ((ca.nivel || 0) >= 4) { sfx.pop(); di('¡Ya está completo!', "It's finished!"); return; }
+  ca.nivel = (ca.nivel || 0) + 1; dibujarElem(ca); colocar(ca);
+  tono(300, 0, 0.12, 'triangle', 0.12); tono(450, 0.1, 0.12, 'triangle', 0.12); burbuja(ca, ca.nivel === 4 ? '🚩' : '✨');
+  di(ca.nivel === 4 ? '¡Qué castillo tan grande!' : '¡Una torre más!', ca.nivel === 4 ? 'What a big castle!' : 'One more tower!'); guardar();
+}
+function abrirCofre(c) {
+  if (c.on) { sfx.pop(); di('¡Ya lo abriste!', 'You already opened it!'); return; }
+  c.on = true; dibujarElem(c); colocar(c);
+  [523, 659, 784, 1047, 1319].forEach((f, i) => tono(f, i * 0.08, 0.25, 'triangle', 0.12));
+  ['🪙', '💎', '🪙'].forEach((emo, k) => { const n = { id: E.sigId++, k: 'tesoro', emo, esc: E.esc, x: c.x - 60 + k * 60, y: c.y - 140 }; E.ents.push(n); crearElem(n); soltarEn(n, n.x, n.y); });
+  di('¡Encontraste un tesoro!', 'You found a treasure!'); guardar();
+}
+setInterval(() => {   // burbujas de quien bucea
+  if (E.esc !== 'playa') return;
+  for (const p of enEscena()) if (p.nadando && p.y > SUPERFICIE + 260 && Math.random() < 0.5) burbuja(p, '🫧');
+}, 1800);
+
+// ---------- Clima y estaciones ----------
+const CLIMAS = {
+  sol: { ico: '☀️', es: '¡Hace sol!', en: "It's sunny!" }, lluvia: { ico: '🌧️', es: 'Está lloviendo. La lluvia riega las plantas.', en: "It's raining. Rain waters the plants." },
+  arcoiris: { ico: '🌈', es: '¡Salió el arcoíris!', en: 'A rainbow came out!' }, nieve: { ico: '❄️', es: '¡Está nevando! Hay un muñeco de nieve.', en: "It's snowing! There's a snowman." },
+  otono: { ico: '🍂', es: 'Es otoño: las hojas caen.', en: "It's fall: the leaves are falling." }, primavera: { ico: '🌸', es: 'Es primavera: hay flores.', en: "It's spring: there are flowers." },
+};
+function aplicarClima() {
+  lienzo.querySelectorAll('.climaCapa').forEach(c => c.remove());
+  const cl = E.clima || 'sol';
+  lienzo.querySelectorAll('.ventana .astro').forEach(a => a.textContent = E.noche ? '🌙' : (cl === 'sol' ? '☀️' : CLIMAS[cl].ico));
+  if (cl === 'sol') return;
+  const rangos = E.esc === 'mapa' ? [[0, ESCENAS.mapa.w]] : ESCENAS[E.esc].exterior || [];
+  for (const [x0, x1] of rangos) {
+    const d = document.createElement('div'); d.className = 'climaCapa clima-' + cl;
+    Object.assign(d.style, { left: x0 + 'px', width: (x1 - x0) + 'px' });
+    if (cl === 'otono' || cl === 'primavera')
+      for (let k = 0; k < Math.ceil((x1 - x0) / 140); k++) d.insertAdjacentHTML('beforeend', `<span class="hoja" style="left:${azar(100)}%;animation-delay:-${(Math.random() * 6).toFixed(1)}s;animation-duration:${(5 + Math.random() * 4).toFixed(1)}s">${cl === 'otono' ? ['🍂', '🍁'][azar(2)] : '🌸'}</span>`);
+    if (cl === 'arcoiris') d.innerHTML = svg(x1 - x0, 900, [['#ef4444', 0], ['#f97316', 22], ['#facc15', 44], ['#22c55e', 66], ['#3b82f6', 88], ['#a855f7', 110]].map(([c, r]) => `<path d="M${(x1 - x0) / 2 - 520 + r} 700 A${520 - r} ${520 - r} 0 0 1 ${(x1 - x0) / 2 + 520 - r} 700" stroke="${c}" stroke-width="22" fill="none" opacity=".7"/>`).join(''));
+    if (cl === 'nieve') d.insertAdjacentHTML('beforeend', '<div class="suelo-nieve"></div>');
+    if (cl === 'lluvia') d.insertAdjacentHTML('beforeend', [0.2, 0.55, 0.8].map(p => `<div class="charco" style="left:${p * 100}%"></div>`).join(''));
+    lienzo.appendChild(d);
+  }
+  if (cl === 'nieve' && rangos.length && !enEscena().some(o => o.k === 'muneco_nieve')) {   // aparece un muñeco de nieve afuera
+    const [x0, x1] = rangos[0], n = { id: E.sigId++, k: 'muneco_nieve', esc: E.esc, x: x0 + (x1 - x0) * 0.62, y: PISO };
+    if (E.esc !== 'mapa') { E.ents.push(n); crearElem(n); colocar(n); }
+  }
+}
+function cambiarClima(cl) {
+  if (cl !== 'nieve') for (const o of E.ents.filter(o => o.k === 'muneco_nieve')) { if (o.esc === E.esc) burbuja(o, '💧'); quitar(o); }   // se derrite
+  E.clima = cl; guardar(); aplicarClima(); pintarNoche();
+  if (cl === 'lluvia') for (let k = 0; k < 30; k++) tono(2000 + Math.random() * 2500, k * 0.05, 0.03, 'sine', 0.03);
+  di(CLIMAS[cl].es, CLIMAS[cl].en);
+}
+setInterval(() => {   // la lluvia riega el huerto
+  if (E.clima !== 'lluvia') return;
+  for (const s of E.ents) if (s.k === 'surco' && s.planta && s.fase < 3 && Math.random() < 0.35) { if (s.esc === E.esc) regar(s, null, true); else s.fase++; }
+}, 4000);
+
 // ---------- Restaurante: armar la pizza ----------
 const pizzaEn = (x, y) => enEscena().find(o => o.k === 'pizza' && !o.cocida && !o.dueno && Math.abs(o.x - x) < 62 && y > o.y - 80 && y < o.y + 20);
 function ponerEnPizza(pz, item) {
@@ -1407,6 +1667,7 @@ $('rutaAdios').onclick = () => {
   setTimeout(() => { b.esc = 'cochera'; el?.remove(); elems.delete(b.id); guardar(); }, 900);
 };
 $('rutasCerrar').onclick = () => { sfx.pop(); $('rutas').classList.remove('abierto'); };
+document.getElementById('cieloCerrar').onclick = () => document.getElementById('cielo').classList.remove('abierto');
 
 // ---------- Escuela: pizarrón para dibujar con el dedo y aprender letras ----------
 let colorTiza = '#f8fafc';
@@ -1521,6 +1782,17 @@ const SONIDO_MASCOTA = {
   gato: () => { tonoDesliz(500, 900, 0, 0.25, 'sawtooth', 0.04); tonoDesliz(900, 600, 0.25, 0.3, 'sawtooth', 0.04); },
   conejo: () => { tono(1600, 0, 0.05, 'sine', 0.1); tono(1800, 0.1, 0.05, 'sine', 0.1); },
   perico: () => [0, 0.12, 0.24].forEach(t => tonoDesliz(1800, 3200, t, 0.09, 'sine', 0.08)),
+  vaca: () => tonoDesliz(220, 150, 0, 0.9, 'sawtooth', 0.06),
+  gallina: () => [0, 0.12, 0.24, 0.5].forEach(t => tono(760, t, 0.06, 'square', 0.05)),
+  cerdo: () => { tonoDesliz(330, 220, 0, 0.15, 'square', 0.06); tonoDesliz(330, 220, 0.22, 0.15, 'square', 0.06); },
+  oveja: () => { tonoDesliz(520, 440, 0, 0.6, 'sawtooth', 0.05); },
+  leon: () => tonoDesliz(160, 80, 0, 0.9, 'sawtooth', 0.09),
+  elefante: () => tonoDesliz(300, 820, 0, 0.6, 'sawtooth', 0.06),
+  mono: () => [0, 0.1, 0.2, 0.3].forEach(t => tonoDesliz(900, 1500, t, 0.08, 'square', 0.04)),
+  pinguino: () => [0, 0.15].forEach(t => tonoDesliz(1200, 900, t, 0.12, 'sine', 0.08)),
+  cebra: () => tonoDesliz(900, 400, 0, 0.5, 'sawtooth', 0.05),
+  jirafa: () => tonoDesliz(300, 340, 0, 0.5, 'sine', 0.08),
+  generico: () => { tono(880, 0, 0.1, 'sine', 0.1); tono(1100, 0.08, 0.1, 'sine', 0.1); },
 };
 function mascotaEn(x, y) { return enEscena().find(o => CAT[o.k]?.t === 'mascota' && Math.abs(o.x - x) < CAT[o.k].w / 2 + 10 && y > o.y - CAT[o.k].h - 20 && y < o.y + 10); }
 function comerMascota(m, cosa) {
@@ -1694,6 +1966,8 @@ function levantar(en) {
   if (en.dueno) { en.dueno = null; toque.dx = 0; toque.dy = -30; }
   en.sobre = null;
   if (estilo?.p === en) cerrarEstilista();
+  if (en.nadando) { en.nadando = false; elems.get(en.id)?.classList.remove('nadando'); }
+  if (en.flota) { en.flota = false; elems.get(en.id)?.classList.remove('flotando'); }
   if (elems.get(en.id)?.classList.contains('columpiando')) actualizarColumpios();
   if (ent(en.asiento?.id)?.k === 'rayos_x' || enEscena().some(o => o.k === 'rayos_x' && o.on)) setTimeout(actualizarMaquinas, 0);
   elems.get(en.id).classList.add('levantado'); elems.get(en.id).classList.remove('cae', 'flota');
@@ -1743,6 +2017,8 @@ function finToque() {
   if (ultimoPuntero[1] > innerHeight - 84) { aMochila(en); return; }
   if (en.k !== 'per' && ultimoEnBasura) { borrar(en); return; }
   if (en.k === 'per') { const b = busEn(mx, my); if (b) { abordar(en, b); return; } }
+  if (SIEMBRA.includes(en.k) || CAT[en.k]?.riega) { const s = surcoEn(mx, my); if (s && (CAT[en.k].riega ? s.planta && s.fase < 3 : !s.planta)) { CAT[en.k].riega ? regar(s, en) : sembrar(s, en); return; } }
+  if (CAT[en.k]?.arena) { const ca = castilloEn(mx, my); if (ca) { construirCastillo(ca, en); return; } }
   if (ING_PIZZA.includes(en.k)) { const pz = pizzaEn(mx, my); if (pz) { ponerEnPizza(pz, en); return; } }
   if (CAT[en.k]?.apaga) { const fu = fuegoEn(mx, my); if (fu) { apagar(fu, en); return; } }
   if (CAT[en.k]?.herramienta) { const p = personajeEn(mx, my, null); if (p) { usarHerramienta(p, en); return; } }
@@ -1819,7 +2095,7 @@ function pintarBolsillo() {
 }
 
 // ---------- Muebles y juguetes nuevos, y pintar paredes y pisos ----------
-function cerrarCajones() { cerrarEstilista(); $('rutas').classList.remove('abierto'); $('creador').classList.remove('abierto'); ['cajon', 'paleta'].forEach(id => $(id).classList.remove('abierto')); $('bMuebles').classList.remove('on'); $('bPintar').classList.remove('on'); modoPintar = false; }
+function cerrarCajones() { cerrarEstilista(); $('rutas').classList.remove('abierto'); document.getElementById('cielo').classList.remove('abierto'); $('creador').classList.remove('abierto'); ['cajon', 'paleta'].forEach(id => $(id).classList.remove('abierto')); $('bMuebles').classList.remove('on'); $('bPintar').classList.remove('on'); modoPintar = false; }
 $('bMuebles').onclick = () => {
   audio(); const abrir = !$('cajon').classList.contains('abierto'); cerrarCajones();
   if (!abrir) return;
@@ -1857,10 +2133,25 @@ function pintar(objetivo) {
 }
 
 // ---------- Día y noche ----------
-function pintarNoche() { $('bNoche').textContent = E.noche ? '☀️' : '🌙'; lienzo.classList.toggle('noche', E.noche); lienzo.querySelectorAll('.astro').forEach(a => a.textContent = E.noche ? '🌙' : '☀️'); }
+function pintarNoche() {
+  $('bNoche').textContent = E.noche ? '🌙' : (E.clima && E.clima !== 'sol' ? CLIMAS[E.clima].ico : '⛅');
+  lienzo.classList.toggle('noche', E.noche);
+  lienzo.querySelectorAll('.ventana .astro').forEach(a => a.textContent = E.noche ? '🌙' : (E.clima && E.clima !== 'sol' ? CLIMAS[E.clima].ico : '☀️'));
+}
+// El botón del cielo abre: día, noche y los climas
 $('bNoche').onclick = () => {
-  audio(); E.noche = !E.noche; guardar();
-  if (E.esc === 'mapa' || E.esc === 'iglesia') construir(); else pintarNoche();
+  audio(); const abrir = !$('cielo').classList.contains('abierto'); cerrarCajones();
+  if (!abrir) return;
+  const f = $('cieloLista'); f.innerHTML = '';
+  const op = (ico, fn) => { const b = document.createElement('button'); b.innerHTML = `<span style="font-size:34px">${ico}</span>`; b.onclick = () => { audio(); fn(); $('cielo').classList.remove('abierto'); }; f.appendChild(b); };
+  op('☀️', () => { if (E.noche) cambiarNoche(); if ((E.clima || 'sol') !== 'sol') cambiarClima('sol'); else di(CLIMAS.sol.es, CLIMAS.sol.en); });
+  op('🌙', () => { if (!E.noche) cambiarNoche(); });
+  for (const k of ['lluvia', 'arcoiris', 'nieve', 'otono', 'primavera']) op(CLIMAS[k].ico, () => cambiarClima(k));
+  $('cielo').classList.add('abierto'); sfx.pop();
+};
+function cambiarNoche() {
+  E.noche = !E.noche; guardar();
+  if (['mapa', 'iglesia', 'escuela', 'doctor', 'granja', 'playa'].includes(E.esc)) construir(); else pintarNoche();
   E.noche ? [784, 659, 523].forEach((f, i) => tono(f, i * 0.15, 0.3, 'sine', 0.08)) : [523, 659, 784].forEach((f, i) => tono(f, i * 0.12, 0.25, 'triangle', 0.08));
   if (E.noche) for (const p of enEscena()) if (p.pose === 'acostado') burbuja(p, '💤');
   di(E.noche ? 'Buenas noches' : 'Buenos días', E.noche ? 'Good night' : 'Good morning');

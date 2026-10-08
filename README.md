@@ -3,7 +3,11 @@
 Un pueblito para jugar libremente, sin reglas ni metas, al estilo de los juegos de "casita": arrastras a los personajes y las cosas con el dedo e inventas tus propias historias. Bilingüe (español / English). Sin anuncios, sin chat y sin internet.
 
 ## Cómo se juega
-- **🗺️ El pueblo:** desliza el mapa y toca un lugar para entrar: la **Casa**, el **Mercado**, el **Salón y la tienda de ropa**, el **Parque y la iglesia**, la **Escuela**, el **Doctor**, el **Restaurante** y **Bomberos y policía**. Pronto: granja y zoológico, playa, aeropuerto y el arca de Noé.
+- **🗺️ El pueblo:** desliza el mapa y toca un lugar para entrar: la **Casa**, el **Mercado**, el **Salón y la tienda de ropa**, el **Parque y la iglesia**, la **Escuela**, el **Doctor**, el **Restaurante**, **Bomberos y policía**, la **Granja y el zoológico** y la **Playa y el mar**. Pronto: aeropuerto y el arca de Noé.
+- **⛅ El cielo:** día ☀️, noche 🌙 y clima: lluvia 🌧️ (con charcos; riega el huerto), arcoíris 🌈, nieve ❄️ (aparece un muñeco de nieve), otoño 🍂 y primavera 🌸. Afuera se ve el clima; adentro, por las ventanas.
+- **🐄 La granja:** la vaca da leche y la gallina pone huevos (tócalas). Cerdito y oveja. **Huerto:** suelta una verdura en la tierra, riégala con la regadera (🌱 → 🌿 → listo) y tócala para cosechar tres.
+- **🦁 El zoológico:** león, cebra, jirafa, elefante, mono y pingüino; al tocarlos dicen su nombre y un dato curioso. Dales de comer (plátano, pescado, lechuga).
+- **🏖️ La playa y el mar:** castillo de arena que crece con la cubeta (4 torres y bandera), sombrilla, toalla, carrito de helados, palmera y un **barco** que flota. **Nadar y bucear:** suelta a un personaje en el mar y se queda nadando donde lo pongas. Abajo hay peces, pulpo, cangrejo, tortuga, delfín y un **cofre del tesoro**.
 - **🚌 Autobús:** tócalo arriba para llamarlo. Suelta personajes en él (caben 5; se ven en las ventanas), tócalo y elige a dónde ir: viaja y los baja en el otro lugar.
 - **🍕 El restaurante:** saca una pizza de la charola y ponle ingredientes encima (salsa, queso, piña, aceitunas, champiñones, chile, albahaca). Métela al **horno** y sale doradita. Sírvela a los clientes de las mesas; hay menú y caja para cobrar.
 - **🚒 Bomberos:** camión con sirena, **tubo** para bajar deslizándose (suelta a alguien arriba), cascos para ponerse y una casa de práctica: la **alarma** prende fueguitos de juguete que se apagan con la cubeta o el extintor (3 chorros cada uno).
