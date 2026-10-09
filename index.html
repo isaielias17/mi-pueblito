@@ -194,6 +194,7 @@
 <header id="barra">
   <button id="bMapa" class="boton" title="Pueblo">🗺️</button>
   <span id="cLugar" class="chip"></span>
+  <span id="cMonedas" class="chip">🪙 0</span>
   <span class="espacio"></span>
   <button id="bBus" class="boton" title="Autobús">🚌</button>
   <button id="bSecretos" class="boton" title="Secretos">🔎</button>
@@ -669,6 +670,40 @@ const CAT = {
     svg: e => svg(260, 380, `<rect x="112" y="320" width="36" height="60" fill="#78350f"/>${[0, 1, 2].map(k => `<path d="M130 ${20 + k * 90} L${30 - k * 10} ${150 + k * 90} H${230 + k * 10} Z" fill="#15803d"/>`).join('')}${[[100, 120], [160, 140], [80, 220], [180, 230], [130, 190], [60, 300], [200, 300], [130, 270]].map(([x, y], i) => `<circle cx="${x}" cy="${y}" r="9" fill="${['#ef4444', '#facc15', '#3b82f6', '#f472b6'][i % 4]}" class="${e.on ? 'foco' : ''}" style="animation-delay:${i * 0.15}s"/>`).join('')}<path d="M130 0 L138 20 L160 22 L142 34 L148 56 L130 44 L112 56 L118 34 L100 22 L122 20 Z" fill="#facc15"/>`) },
   nacimiento: { t: 'mueble', w: 320, h: 260, es: 'Nacimiento', en: 'Nativity scene', fiesta: 'navidad',
     svg: () => svg(320, 260, `<path d="M10 90 L160 10 L310 90 Z" fill="#92400e"/><rect x="30" y="86" width="260" height="174" fill="#d6a77a"/><rect x="50" y="110" width="220" height="150" fill="#fef3c7"/><path d="M160 -40 L166 -24 L184 -22 L170 -12 L174 6 L160 -4 L146 6 L150 -12 L136 -22 L154 -24 Z" fill="#facc15"/><rect x="120" y="210" width="80" height="34" rx="6" fill="#facc15"/><text x="160" y="232" font-size="34" text-anchor="middle">👶</text><text x="90" y="230" font-size="46" text-anchor="middle">🐑</text><text x="236" y="230" font-size="46" text-anchor="middle">🐄</text><text x="160" y="180" font-size="30" text-anchor="middle">✨</text>`) },
+  // Negocios: comprar (costo) → hacer → poner precio → vender → ganancia
+  limon: { t: 'cosa', emo: '🍋', es: 'Limón', en: 'Lemon', insumo: true },
+  azucar: { t: 'cosa', es: 'Azúcar', en: 'Sugar', insumo: true, svg: () => svg(100, 100, `<path d="M22 20 H78 L84 94 H16 Z" fill="#f8fafc" stroke="#94a3b8" stroke-width="4"/><path d="M22 20 Q50 6 78 20" fill="none" stroke="#94a3b8" stroke-width="4"/><rect x="26" y="44" width="48" height="26" rx="4" fill="#60a5fa"/><text x="50" y="63" font-size="15" font-weight="900" text-anchor="middle" fill="#fff">AZÚCAR</text>`) },
+  harina: { t: 'cosa', es: 'Harina', en: 'Flour', insumo: true, svg: () => svg(100, 100, `<path d="M20 22 H80 L86 94 H14 Z" fill="#fef3c7" stroke="#d6a77a" stroke-width="4"/><path d="M20 22 Q50 4 80 22" fill="none" stroke="#d6a77a" stroke-width="4"/><text x="50" y="62" font-size="34" text-anchor="middle">🌾</text>`) },
+  masa: { t: 'cosa', es: 'Masa de maíz', en: 'Corn dough', insumo: true, svg: () => svg(100, 100, `<ellipse cx="50" cy="66" rx="42" ry="26" fill="#fcd34d"/><ellipse cx="44" cy="58" rx="20" ry="10" fill="#fde68a"/>`) },
+  proveedor: { t: 'mueble', w: 130, h: 120, es: 'Proveedor', en: 'Supplier', fijo: true, pegado: true,
+    svg: e => { const c = CAT[e.de], dib = e.de === 'cajas' ? '<text x="65" y="56" font-size="44" text-anchor="middle">📦</text>' : c.emo ? `<text x="65" y="56" font-size="44" text-anchor="middle">${c.emo}</text>` : c.svg({}).replace('width="100%" height="100%"', 'x="35" y="10" width="60" height="56"');
+      return svg(130, 120, `<rect x="4" y="30" width="122" height="66" rx="8" fill="${MADERA}"/><path d="M4 52 H126 M4 74 H126" stroke="${MADERA2}" stroke-width="4"/>${dib}<rect x="22" y="92" width="86" height="28" rx="14" fill="#fff" stroke="#16a34a" stroke-width="3"/><text x="52" y="113" font-size="19" font-weight="900" text-anchor="middle" fill="#14532d">${e.costo}</text><text x="80" y="113" font-size="18" text-anchor="middle">🪙</text>`); } },
+  jarra: { t: 'mueble', w: 110, h: 140, es: 'Jarra', en: 'Pitcher', fabrica: { neg: 'limonada', receta: ['limon', 'azucar'], hace: 4 },
+    svg: e => { const n = (e.dentro || []).length; return svg(110, 140, `<path d="M18 20 H88 L82 136 H24 Z" fill="#e0f2fe" stroke="#7dd3fc" stroke-width="5" opacity=".9"/><path d="M88 40 Q108 50 92 88" fill="none" stroke="#7dd3fc" stroke-width="6"/>${n ? `<path d="M${22 + (2 - n) * 2} ${136 - n * 40} H${84 - (2 - n) * 2} L82 136 H24 Z" fill="#fde047" opacity=".8"/>` : ''}${(e.dentro || []).map((k, i) => `<text x="${40 + i * 28}" y="${118 - i * 22}" font-size="24" text-anchor="middle">${CAT[k].emo || '🧂'}</text>`).join('')}`); } },
+  horno_pan: { t: 'mueble', w: 200, h: 200, es: 'Horno de pan', en: 'Bread oven', fabrica: { neg: 'panaderia', receta: ['harina'], hace: 4 },
+    svg: e => svg(200, 200, `<rect x="0" y="0" width="200" height="200" rx="16" fill="#78716c"/><rect x="24" y="40" width="152" height="110" rx="10" fill="${e.on ? '#f97316' : '#1f2937'}"/>${e.on ? '<text x="100" y="110" font-size="44" text-anchor="middle">🍞</text>' : ''}<rect x="60" y="164" width="80" height="14" rx="7" fill="#d6d3d1"/><circle cx="40" cy="20" r="8" fill="#ef4444"/><circle cx="160" cy="20" r="8" fill="#22c55e"/>`) },
+  tortilladora: { t: 'mueble', w: 260, h: 200, es: 'Máquina de tortillas', en: 'Tortilla machine', fabrica: { neg: 'tortilleria', receta: ['masa'], hace: 6 },
+    svg: e => svg(260, 200, `<rect x="0" y="100" width="260" height="100" rx="10" fill="#94a3b8"/><rect x="10" y="20" width="110" height="90" rx="10" fill="#cbd5e1"/><circle cx="65" cy="60" r="30" fill="#64748b"/><circle cx="65" cy="60" r="10" fill="#cbd5e1"/><path d="M120 92 H250" stroke="#1f2937" stroke-width="14"/>${e.on ? [140, 175, 210].map(x => `<ellipse cx="${x}" cy="88" rx="16" ry="5" fill="#fde68a"/>`).join('') : ''}<rect x="30" y="130" width="200" height="40" rx="8" fill="#475569"/>`) },
+  vitrina: { t: 'mueble', w: 200, h: 110, es: 'Vitrina', en: 'Display case', fijo: true, pegado: true,
+    svg: e => { const p = PRODUCTOS[e.neg], n = E.neg?.[e.neg]?.stock || 0;
+      return svg(200, 110, `<rect x="0" y="0" width="200" height="110" rx="10" fill="#e0f2fe" stroke="#94a3b8" stroke-width="4" opacity=".95"/>${Array.from({ length: Math.min(n, 8) }, (_, i) => `<text x="${28 + (i % 4) * 48}" y="${50 + Math.floor(i / 4) * 44}" font-size="34" text-anchor="middle">${p.emo}</text>`).join('')}<rect x="150" y="80" width="44" height="26" rx="8" fill="#1f2937"/><text x="172" y="99" font-size="18" font-weight="900" text-anchor="middle" fill="#fde047">${n}</text>`); } },
+  letrero_precio: { t: 'mueble', w: 150, h: 120, es: 'Precio', en: 'Price', fijo: true, pegado: true,
+    svg: e => { const pr = E.neg?.[e.neg]?.precio || 1; return svg(150, 120, `<rect x="0" y="0" width="150" height="120" rx="14" fill="#fff" stroke="#f59e0b" stroke-width="6"/><text x="75" y="30" font-size="20" font-weight="900" text-anchor="middle" fill="#92400e">${PRODUCTOS[e.neg].emo} ${T('Precio', 'Price').split(' · ')[0]}</text><text x="56" y="92" font-size="56" font-weight="900" text-anchor="middle" fill="#1f2937">${pr}</text><text x="108" y="88" font-size="34" text-anchor="middle">🪙</text>`); } },
+  letrero_abierto: { t: 'mueble', w: 170, h: 70, es: 'Abierto o cerrado', en: 'Open or closed', fijo: true, pegado: true,
+    svg: e => { const ab = E.neg?.[e.neg]?.abierto; return svg(170, 70, `<path d="M40 0 L85 -24 L130 0" stroke="#78716c" stroke-width="3" fill="none"/><rect x="0" y="0" width="170" height="70" rx="12" fill="${ab ? '#22c55e' : '#ef4444'}"/><text x="85" y="46" font-size="${ab ? 30 : 26}" font-weight="900" text-anchor="middle" fill="#fff">${ab ? T('ABIERTO', 'OPEN').split(' · ')[0] : T('CERRADO', 'CLOSED').split(' · ')[0]}</text>`); } },
+  libreta: { t: 'mueble', w: 220, h: 170, es: 'Libreta de cuentas', en: 'Account book', fijo: true, pegado: true,
+    svg: e => { const n = E.neg?.[e.neg] || {}, gan = (n.ventas || 0) - (n.costos || 0);
+      const fila = (y, ico, txt, v, col) => `<text x="16" y="${y}" font-size="24">${ico}</text><text x="50" y="${y}" font-size="20" font-weight="800" fill="#334155">${txt}</text><text x="204" y="${y}" font-size="26" font-weight="900" text-anchor="end" fill="${col}">${v}</text>`;
+      return svg(220, 170, `<rect x="0" y="0" width="220" height="170" rx="10" fill="#fefce8" stroke="#a16207" stroke-width="4"/><path d="M0 40 H220" stroke="#fca5a5" stroke-width="2"/><text x="110" y="28" font-size="18" font-weight="900" text-anchor="middle" fill="#a16207">📒 ${T('Cuentas de hoy', "Today's money").split(' · ')[0]}</text>${fila(72, '🪙', T('Vendí', 'Sold').split(' · ')[0], n.ventas || 0, '#15803d')}${fila(108, '🛒', T('Gasté', 'Spent').split(' · ')[0], n.costos || 0, '#b91c1c')}<path d="M14 120 H206" stroke="#334155" stroke-width="3"/>${fila(152, gan >= 0 ? '😊' : '😟', T('Gané', 'Profit').split(' · ')[0], gan, gan >= 0 ? '#15803d' : '#b91c1c')}`); } },
+  // Banco: ahorrar para una meta
+  alcancia: { t: 'mueble', w: 230, h: 190, es: 'Alcancía', en: 'Piggy bank', fijo: true,
+    svg: () => svg(230, 190, `<ellipse cx="115" cy="104" rx="100" ry="72" fill="#f9a8d4"/><circle cx="200" cy="96" r="26" fill="#f9a8d4"/><ellipse cx="214" cy="100" rx="12" ry="9" fill="#f472b6"/><circle cx="180" cy="80" r="6" fill="#1f2937"/><path d="M60 40 L70 14 L90 36 Z" fill="#f472b6"/><rect x="88" y="34" width="56" height="10" rx="5" fill="#9d174d"/><path d="M60 166 V190 M100 172 V190 M140 172 V190 M176 164 V190" stroke="#f472b6" stroke-width="16"/><path d="M14 96 q-14 -10 -6 -24" stroke="#f472b6" stroke-width="6" fill="none"/><text x="110" y="122" font-size="40" font-weight="900" text-anchor="middle" fill="#9d174d">${E.ahorro || 0}</text><text x="110" y="150" font-size="20" text-anchor="middle">🪙</text>`) },
+  cajero: { t: 'mueble', w: 150, h: 250, es: 'Cajero', en: 'ATM', fijo: true,
+    svg: () => svg(150, 250, `<rect x="0" y="0" width="150" height="250" rx="12" fill="#1e3a8a"/><rect x="20" y="24" width="110" height="70" rx="6" fill="#bfdbfe"/><text x="75" y="68" font-size="28" text-anchor="middle">🏦</text>${[0, 1, 2].map(r => [0, 1, 2].map(c => `<rect x="${32 + c * 30}" y="${110 + r * 24}" width="22" height="16" rx="3" fill="#e2e8f0"/>`).join('')).join('')}<rect x="30" y="190" width="90" height="12" rx="4" fill="#0f172a"/><text x="75" y="232" font-size="16" font-weight="900" text-anchor="middle" fill="#fde047">⬆ 🪙</text>`) },
+  meta_tablero: { t: 'mueble', w: 300, h: 230, es: 'Mi meta', en: 'My goal', fijo: true, pegado: true,
+    svg: () => { const m = METAS[E.meta || 0], a = Math.min(E.ahorro || 0, m[3]);
+      return svg(300, 230, `<rect x="0" y="0" width="300" height="230" rx="16" fill="#fff" stroke="#7c3aed" stroke-width="6"/><text x="150" y="38" font-size="22" font-weight="900" text-anchor="middle" fill="#5b21b6">🎯 ${T('Mi meta', 'My goal').split(' · ')[0]}</text><text x="150" y="118" font-size="72" text-anchor="middle">${m[0]}</text><rect x="24" y="146" width="252" height="26" rx="13" fill="#ede9fe"/><rect x="24" y="146" width="${252 * a / m[3]}" height="26" rx="13" fill="#8b5cf6"/><text x="150" y="208" font-size="26" font-weight="900" text-anchor="middle" fill="#1f2937">${a} / ${m[3]} 🪙</text>`); } },
+  premio_meta: { t: 'cosa', es: 'Premio', en: 'Prize' },
   muneco_nieve: { t: 'mueble', w: 150, h: 230, es: 'Muñeco de nieve', en: 'Snowman',
     svg: () => svg(150, 230, `<circle cx="75" cy="170" r="58" fill="#f8fafc" stroke="#e2e8f0" stroke-width="3"/><circle cx="75" cy="78" r="42" fill="#f8fafc" stroke="#e2e8f0" stroke-width="3"/><circle cx="62" cy="70" r="5" fill="#1f2937"/><circle cx="88" cy="70" r="5" fill="#1f2937"/><path d="M75 80 L104 88 L75 92 Z" fill="#f97316"/><path d="M40 112 Q75 128 110 112" stroke="#ef4444" stroke-width="12" fill="none"/><path d="M40 26 H110 V36 H40 Z M52 0 H98 V30 H52 Z" fill="#1f2937"/>${[150, 175, 200].map(y => `<circle cx="75" cy="${y}" r="5" fill="#1f2937"/>`).join('')}`) },
   // Mascotas (dibujos propios)
@@ -788,6 +823,36 @@ const PUESTOS = [
 const ESTANTE = 470, MOSTRADOR_P = 620;
 ESCENAS.mercado.superficies = PUESTOS.map(p => ({ x0: p.x, x1: p.x + 420, y: MOSTRADOR_P }));   // los mostradores de los puestos
 // Salón (peinar) y tienda de ropa (arrastrar la ropa al personaje)
+// La calle de los negocios (4 negocios de 1000 de ancho cada uno) y el banco
+const PRODUCTOS = {   // valor = lo que los clientes pagan con gusto; un poco más, a veces; mucho más, no
+  limonada: { emo: '🥤', es: 'limonada', en: 'lemonade', valor: 3, nombre: ['Puesto de limonada', 'Lemonade stand'], ico: '🍋' },
+  panaderia: { emo: '🍞', es: 'pan', en: 'bread', valor: 2, nombre: ['Panadería', 'Bakery'], ico: '🍞' },
+  tortilleria: { emo: '🫓', es: 'tortillas', en: 'tortillas', valor: 2, nombre: ['Tortillería', 'Tortilla shop'], ico: '🫓' },
+  jugueteria: { emo: '🧸', es: 'juguete', en: 'toy', valor: 6, nombre: ['Juguetería', 'Toy store'], ico: '🧸' },
+};
+const NEGOCIOS = Object.keys(PRODUCTOS), METAS = [['⚽', 'un balón', 'a ball', 10], ['🧸', 'un oso gigante', 'a giant teddy bear', 20], ['🛹', 'una patineta', 'a skateboard', 25], ['🚲', 'una bicicleta', 'a bike', 30]];
+const negX = k => NEGOCIOS.indexOf(k) * 1000;   // dónde empieza cada negocio
+ESCENAS.negocios = { w: 4000, nombre: ['La calle de los negocios', 'Business street'], exterior: [[0, 1000]], superficies: NEGOCIOS.map(k => ({ x0: negX(k) + 360, x1: negX(k) + 820, y: 600 })) };
+ESCENAS.banco = { w: 1800, nombre: ['El banco', 'The bank'] };
+function negociosInicial(id) {
+  const ents = [], m = (k, x, y = PISO, extra = {}) => { const e = { id: id++, k, esc: 'negocios', x, y, ...extra }; ents.push(e); return e; };
+  const insumos = { limonada: [['limon', 2], ['azucar', 1]], panaderia: [['harina', 3]], tortilleria: [['masa', 2]], jugueteria: [['cajas', 4]] };
+  const fabrica = { limonada: ['jarra', 440], panaderia: ['horno_pan', 470], tortilleria: ['tortilladora', 500] };
+  for (const k of NEGOCIOS) {
+    const s = negX(k);
+    insumos[k].forEach(([de, costo], i) => m('proveedor', s + 110 + i * 140, PISO, { de, costo, neg: k }));
+    if (fabrica[k]) m(fabrica[k][0], s + fabrica[k][1], 600, { dentro: [] });
+    m('vitrina', s + 730, 600, { neg: k }); m('letrero_precio', s + 540, 430, { neg: k }); m('letrero_abierto', s + 880, 330, { neg: k }); m('libreta', s + 180, 420, { neg: k });
+  }
+  ents.push({ id: id++, k: 'per', esc: 'negocios', x: 600, y: PISO, pose: 'parado', mira: 1, tam: 'nino', piel: '#e0ac69', pelo: 'coletas', colorPelo: '#c2410c', ropa: 'vestido', color: '#facc15', pantalon: '#e0ac69' });
+  return { ents, sigId: id };
+}
+function bancoInicial(id) {
+  const ents = [], m = (k, x, y = PISO, extra = {}) => { const e = { id: id++, k, esc: 'banco', x, y, ...extra }; ents.push(e); return e; };
+  m('mostrador', 330); m('alcancia', 760); m('cajero', 1080); m('meta_tablero', 1450, 470); m('planta', 1700);
+  ents.push({ id: id++, k: 'per', esc: 'banco', x: 430, y: PISO, pose: 'parado', mira: -1, tam: 'adulto', piel: '#8d5524', pelo: 'chongo', colorPelo: '#1f1300', ropa: 'camisa', color: '#1e3a8a', pantalon: '#1f2937', acc: 'lentes', accCol: '#1f2937' });
+  return { ents, sigId: id };
+}
 // Aeropuerto, países (se llega en avión) y el arca de Noé
 ESCENAS.aeropuerto = { w: 2400, nombre: ['El aeropuerto', 'The airport'], exterior: [[1300, 2400]] };
 for (const [k, p] of Object.entries(PAISES)) ESCENAS['pais_' + k] = { w: 2000, nombre: [p.es, p.en], exterior: [[0, 2000]], pais: k };
@@ -955,6 +1020,8 @@ const LUGARES = [
   { k: 'playa', es: 'Playa y mar', en: 'Beach & sea', listo: true, ico: '🏖️' },
   { k: 'aeropuerto', es: 'Aeropuerto', en: 'Airport', listo: true, ico: '✈️' },
   { k: 'arca', es: 'El arca de Noé', en: "Noah's ark", listo: true, ico: '🚢' },
+  { k: 'negocios', es: 'Negocios', en: 'Shops', listo: true, ico: '🏪' },
+  { k: 'banco', es: 'Banco', en: 'Bank', listo: true, ico: '🏦' },
 ];
 LUGARES.forEach((L, i) => L.x = 140 + i * 380);
 ESCENAS.mapa.w = 140 + LUGARES.length * 380 + 80;
@@ -992,12 +1059,15 @@ function migrar() {
   if (!E.ents.some(e => e.esc === 'mercado')) { const m = mercadoInicial(E.sigId); E.ents.push(...m.ents); E.sigId = m.sigId; }
   if (!E.ents.some(e => e.esc === 'salon')) { const m = salonInicial(E.sigId); E.ents.push(...m.ents); E.sigId = m.sigId; }
   if (!E.ents.some(e => e.esc === 'iglesia')) { const m = iglesiaInicial(E.sigId); E.ents.push(...m.ents); E.sigId = m.sigId; }
-  for (const [k, f] of [['escuela', escuelaInicial], ['doctor', doctorInicial], ['restaurante', restauranteInicial], ['bomberos', bomberosInicial], ['granja', granjaInicial], ['playa', playaInicial], ['aeropuerto', aeropuertoInicial], ['arca', arcaInicial], ...Object.keys(PAISES).map(k => ['pais_' + k, id => paisInicial(id, k)])]) if (!E.ents.some(e => e.esc === k)) { const m = f(E.sigId); E.ents.push(...m.ents); E.sigId = m.sigId; }
+  for (const [k, f] of [['escuela', escuelaInicial], ['doctor', doctorInicial], ['restaurante', restauranteInicial], ['bomberos', bomberosInicial], ['granja', granjaInicial], ['playa', playaInicial], ['aeropuerto', aeropuertoInicial], ['arca', arcaInicial], ['negocios', negociosInicial], ['banco', bancoInicial], ...Object.keys(PAISES).map(k => ['pais_' + k, id => paisInicial(id, k)])]) if (!E.ents.some(e => e.esc === k)) { const m = f(E.sigId); E.ents.push(...m.ents); E.sigId = m.sigId; }
   E.secretos ||= [];
   E.bus ||= { pasajeros: [] };
   E.avion ||= { pasajeros: [] }; E.sellos ||= [];
   if (['nieve', 'otono', 'primavera'].includes(E.clima)) { E.estacion = { nieve: 'invierno', otono: 'otono', primavera: 'primavera' }[E.clima]; E.clima = 'sol'; }   // antes eran climas
   E.estacion ||= 'verano';
+  E.monedas ??= 10; E.ahorro ??= 0; E.meta ??= 0; E.metas ||= [];
+  E.neg ||= {}; for (const k of NEGOCIOS) E.neg[k] ||= { stock: 0, precio: PRODUCTOS[k].valor, ventas: 0, costos: 0, abierto: false };
+  E.ents = E.ents.filter(e => !e.cliente);   // los clientes no se guardan
   for (const s of SECRETOS) if (!E.secretos.includes(s.sid) && !E.ents.some(e => e.sid === s.sid)) E.ents.push({ id: E.sigId++, k: 'secreto', esc: s.esc, x: s.x, y: s.y, sid: s.sid, emo: s.emo });
   if (!E.ents.some(e => e.k === 'olla')) {
     const estufa = E.ents.find(e => e.k === 'estufa' && e.esc === 'casa'), mesa = E.ents.find(e => e.k === 'mesa' && e.esc === 'casa');
@@ -1036,10 +1106,11 @@ function construir() {
   lienzo.innerHTML = ''; elems.clear(); radio(false);
   const esc = ESCENAS[E.esc];
   $('cLugar').textContent = T(...esc.nombre);
+  pintarMonedas();
   document.body.classList.toggle('enMapa', E.esc === 'mapa');
   ['bMuebles', 'bPintar', 'bBus'].forEach(id => $(id).style.display = E.esc === 'mapa' ? 'none' : '');
   cerrarCajones();
-  ({ mapa: construirMapa, mercado: construirMercado, salon: construirSalon, iglesia: construirIglesia, escuela: construirEscuela, doctor: construirDoctor, restaurante: construirRestaurante, bomberos: construirBomberos, granja: construirGranja, playa: construirPlaya, aeropuerto: construirAeropuerto, arca: construirArca }[E.esc] || (E.esc.startsWith('pais_') && construirPais) || construirCasa)();
+  ({ mapa: construirMapa, mercado: construirMercado, salon: construirSalon, iglesia: construirIglesia, escuela: construirEscuela, doctor: construirDoctor, restaurante: construirRestaurante, bomberos: construirBomberos, granja: construirGranja, playa: construirPlaya, aeropuerto: construirAeropuerto, arca: construirArca, negocios: construirNegocios, banco: construirBanco }[E.esc] || (E.esc.startsWith('pais_') && construirPais) || construirCasa)();
   $('bPintar').style.display = E.esc === 'casa' ? '' : 'none';
   const oscuro = document.createElement('div'); oscuro.id = 'oscuro'; lienzo.appendChild(oscuro);
   lienzo.classList.toggle('noche', E.noche);
@@ -1105,6 +1176,30 @@ function construirSalon() {
 }
 function letrero(x, texto, borde, color) {
   return `<rect x="${x - 170}" y="70" width="340" height="60" rx="16" fill="#fff" stroke="${borde}" stroke-width="5"/><text x="${x}" y="112" font-size="30" font-weight="900" text-anchor="middle" fill="${color}">${texto}</text>`;
+}
+function construirNegocios() {
+  const f = document.createElement('div'), noche = E.noche; f.className = 'fondo';
+  const cols = { limonada: '#facc15', panaderia: '#f59e0b', tortilleria: '#16a34a', jugueteria: '#ec4899' };
+  let s = '';
+  for (const k of NEGOCIOS) {
+    const x = negX(k), c = cols[k], p = PRODUCTOS[k];
+    s += k === 'limonada'
+      ? `<rect x="${x}" width="1000" height="760" fill="${noche ? '#312e81' : '#bae6fd'}"/><path d="M${x} 620 Q${x + 500} 540 ${x + 1000} 610 V760 H${x} Z" fill="#86efac"/><rect x="${x}" y="760" width="1000" height="140" fill="#4ade80"/>`
+      : `<rect x="${x}" width="1000" height="760" fill="#fff7ed"/>${Array.from({ length: 20 }, (_, j) => `<rect x="${x + j * 50}" y="0" width="25" height="760" fill="${c}14"/>`).join('')}<rect x="${x}" y="760" width="1000" height="140" fill="#d6d3d1"/>${Array.from({ length: 10 }, (_, j) => `<rect x="${x + j * 100}" y="760" width="50" height="140" fill="#e7e5e4"/>`).join('')}<rect x="${x - 14}" y="0" width="28" height="520" fill="#e7d3b5"/>`;
+    s += `${Array.from({ length: 9 }, (_, j) => `<path d="M${x + 340 + j * 56} 230 h56 l-6 60 q-22 14 -44 0 Z" fill="${j % 2 ? '#fff' : c}"/>`).join('')}<path d="M${x + 350} 290 V600 M${x + 830} 290 V600" stroke="${MADERA2}" stroke-width="12"/>
+      <rect x="${x + 340}" y="600" width="500" height="22" rx="6" fill="${MADERA}"/><rect x="${x + 352}" y="620" width="476" height="140" fill="${MADERA2}"/>
+      ${letrero(x + 590, `${p.ico} ${T(...p.nombre).split(' · ')[0]}`, c, '#1f2937')}`;
+  }
+  f.innerHTML = svg(4000, 900, s);
+  lienzo.appendChild(f);
+}
+function construirBanco() {
+  const f = document.createElement('div'); f.className = 'fondo';
+  f.innerHTML = svg(1800, 900, `<rect width="1800" height="760" fill="#f1f5f9"/>${[200, 600, 1000, 1400].map(x => `<rect x="${x - 30}" y="0" width="60" height="760" fill="#e2e8f0"/>`).join('')}
+    <rect y="760" width="1800" height="140" fill="#cbd5e1"/>${Array.from({ length: 18 }, (_, k) => `<rect x="${k * 100}" y="${760 + (k % 2) * 70}" width="100" height="70" fill="#e2e8f0"/>`).join('')}
+    ${letrero(760, '🏦 ' + T('Banco', 'Bank').split(' · ')[0], '#1e3a8a', '#1e3a8a')}
+    <text x="760" y="${PISO - 230}" font-size="24" font-weight="900" text-anchor="middle" fill="#9d174d">${T('Toca para ahorrar', 'Tap to save').split(' · ')[0]} ⬇</text>`);
+  lienzo.appendChild(f);
 }
 function construirAeropuerto() {
   const f = document.createElement('div'), noche = E.noche; f.className = 'fondo';
@@ -1253,6 +1348,8 @@ function construirMapa() {
     granja: `<path d="M20 200 L150 90 L280 200 Z" fill="#b91c1c"/><rect x="40" y="195" width="220" height="185" fill="#dc2626"/><path d="M110 380 V270 H190 V380 M110 270 L190 380 M190 270 L110 380" stroke="#fff" stroke-width="7" fill="#7f1d1d"/><rect x="120" y="140" width="60" height="40" fill="#fde68a" stroke="#fff" stroke-width="5"/><path d="M0 380 V330 H300 V380 M0 345 H300" stroke="#fff" stroke-width="6" fill="none"/>`,
     playa: `<rect x="0" y="300" width="300" height="80" fill="#fde68a"/><path d="M0 300 Q75 280 150 300 T300 300 V250 H0 Z" fill="#38bdf8"/><path d="M200 380 V170" stroke="#92400e" stroke-width="12"/><path d="M200 170 Q150 150 120 190 M200 170 Q250 140 280 180 M200 170 Q180 120 140 120 M200 170 Q230 115 270 125" stroke="#16a34a" stroke-width="14" fill="none" stroke-linecap="round"/><path d="M40 300 L80 200 L120 300 Z" fill="#f472b6"/><path d="M80 200 V320" stroke="#78716c" stroke-width="5"/><circle cx="60" cy="350" r="14" fill="#ef4444"/>`,
     aeropuerto: `<rect x="20" y="220" width="260" height="160" fill="#e0f2fe" stroke="#64748b" stroke-width="4"/><rect x="200" y="120" width="40" height="110" fill="#94a3b8"/><rect x="180" y="90" width="80" height="40" rx="10" fill="#38bdf8" stroke="#64748b" stroke-width="4"/><path d="M40 260 H200" stroke="#7dd3fc" stroke-width="20"/><g transform="translate(70 70) rotate(-15)"><path d="M0 30 L120 20 Q140 20 140 30 Q140 40 120 40 L0 30" fill="#f8fafc" stroke="#64748b" stroke-width="3"/><path d="M50 30 L30 -10 L50 -10 L80 30 M50 32 L30 70 L50 70 L80 32 M10 30 L0 5 L12 5 L24 30" fill="#ef4444"/></g>`,
+    negocios: `${[['#facc15', '🍋'], ['#f59e0b', '🍞'], ['#16a34a', '🫓'], ['#ec4899', '🧸']].map(([c, e], i) => `<rect x="${i * 75}" y="170" width="70" height="210" fill="#fef3c7" stroke="${c}" stroke-width="5"/><path d="M${i * 75 - 4} 170 h78 l-8 -34 h-62 Z" fill="${c}"/><text x="${i * 75 + 35}" y="240" font-size="40" text-anchor="middle">${e}</text><rect x="${i * 75 + 18}" y="300" width="34" height="80" fill="#92400e"/>`).join('')}`,
+    banco: `<path d="M10 140 L150 60 L290 140 Z" fill="#cbd5e1"/><rect x="20" y="140" width="260" height="20" fill="#94a3b8"/>${[50, 110, 170, 230].map(x => `<rect x="${x - 12}" y="160" width="24" height="190" fill="#f8fafc" stroke="#cbd5e1" stroke-width="3"/>`).join('')}<rect x="20" y="350" width="260" height="30" fill="#94a3b8"/><circle cx="150" cy="112" r="22" fill="#facc15" stroke="#b45309" stroke-width="4"/><text x="150" y="121" font-size="24" font-weight="900" text-anchor="middle" fill="#92400e">$</text>`,
     arca: `<path d="M0 300 Q75 280 150 300 T300 300 V380 H0 Z" fill="#38bdf8"/><path d="M20 220 H280 L250 310 H50 Z" fill="#92400e"/><path d="M28 240 H272 M38 270 H262" stroke="#7c2d12" stroke-width="5"/><rect x="90" y="150" width="120" height="72" fill="#d6a77a" stroke="#7c2d12" stroke-width="4"/><path d="M80 152 L150 110 L220 152 Z" fill="#b45309"/><text x="115" y="200" font-size="30" text-anchor="middle">🦒</text><text x="170" y="200" font-size="30" text-anchor="middle">🐘</text><path d="M60 120 A90 90 0 0 1 240 120" fill="none" stroke="#f472b6" stroke-width="6" opacity=".6"/>`,
   };
   for (const L of LUGARES) {
@@ -1455,6 +1552,15 @@ function tocar(e) {
   if (e.k === 'secreto') { encontrarSecreto(e); return; }
   if (e.k === 'autobus') { abrirRutas(); return; }
   if (e.k === 'avion') { abrirVuelos(); return; }
+  if (e.k === 'proveedor') { comprarInsumo(e); return; }
+  if (e.k === 'letrero_precio') { const n = E.neg[e.neg]; n.precio = n.precio % 9 + 1; dibujarElem(e); colocar(e); tono(500 + n.precio * 60, 0, 0.1, 'triangle', 0.12); di(`Precio: ${n.precio} ${n.precio === 1 ? 'moneda' : 'monedas'}`, `Price: ${n.precio} ${n.precio === 1 ? 'coin' : 'coins'}`); guardar(); return; }
+  if (e.k === 'letrero_abierto') { abrirCerrar(e); return; }
+  if (e.k === 'libreta') { explicarCuentas(e.neg); return; }
+  if (e.k === 'vitrina') { const n = E.neg[e.neg], p = PRODUCTOS[e.neg]; sfx.pop(); di(`Tienes ${n.stock} para vender.`, `You have ${n.stock} to sell.`); return; }
+  if (CAT[e.k]?.fabrica) { const f = CAT[e.k].fabrica; sfx.pop(); di(`Ponle: ${f.receta.map(r => CAT[r].es.toLowerCase()).join(' y ')}.`, `Add: ${f.receta.map(r => CAT[r].en.toLowerCase()).join(' and ')}.`); return; }
+  if (e.k === 'alcancia') { ahorrar(e); return; }
+  if (e.k === 'cajero') { sacarDinero(); return; }
+  if (e.k === 'meta_tablero') { tocarMeta(e); return; }
   if (CAT[e.k]?.pais) { sfx.pop(); burbuja(e, '📸'); saludoPais(CAT[e.k].pais); setTimeout(() => di(c.es, c.en), 2600); return; }
   if (e.k === 'pastel_cumple') { soplarPastel(e); return; }
   if (e.k === 'pinata') { pegarPinata(e, el); return; }
@@ -1624,6 +1730,140 @@ $('cobroMoneda').onclick = () => {
 };
 $('cobroListo').onclick = () => { $('cobro').classList.remove('abierta'); cobro = null; };
 
+// ---------- Negocios: comprar, hacer, poner precio, vender y ver la ganancia ----------
+function pintarMonedas() {
+  const ch = $('cMonedas'); ch.textContent = `🪙 ${E.monedas}`;
+  ch.style.display = ['negocios', 'banco'].includes(E.esc) ? '' : 'none';   // solo donde se usa el dinero
+}
+const moneditas = n => { for (let k = 0; k < Math.min(n, 6); k++) { tono(1400, k * 0.07, 0.05, 'square', 0.05); tono(2100, k * 0.07 + 0.03, 0.07, 'sine', 0.07); } };
+function redibujarNegocio(k) {
+  for (const o of enEscena()) if (o.neg === k && ['vitrina', 'libreta', 'letrero_precio', 'letrero_abierto'].includes(o.k)) { dibujarElem(o); colocar(o); }
+  pintarMonedas(); guardar();
+}
+function comprarInsumo(pr) {   // comprar es un costo: sale dinero
+  const n = E.neg[pr.neg];
+  if (E.monedas < pr.costo) { sfx.casi?.() || tono(300, 0, 0.2, 'sine', 0.1); di(`No te alcanza: cuesta ${pr.costo} y tienes ${E.monedas}. ¡Vende algo primero!`, `Not enough money: it costs ${pr.costo} and you have ${E.monedas}. Sell something first!`); return; }
+  E.monedas -= pr.costo; n.costos += pr.costo; moneditas(pr.costo);
+  if (pr.de === 'cajas') {   // la juguetería compra juguetes ya hechos para revenderlos
+    n.stock += 2; burbuja(pr, '📦');
+    di(`Compraste 2 juguetes por ${pr.costo} monedas. ¡Ahora véndelos!`, `You bought 2 toys for ${pr.costo} coins. Now sell them!`);
+  } else {
+    const it = { id: E.sigId++, k: pr.de, esc: E.esc, x: pr.x, y: pr.y - 160 }; E.ents.push(it); crearElem(it); soltarEn(it, it.x + 20, it.y);
+    di(`Compraste ${CAT[pr.de].es.toLowerCase()}: costó ${pr.costo}.`, `You bought ${CAT[pr.de].en.toLowerCase()}: it cost ${pr.costo}.`);
+  }
+  redibujarNegocio(pr.neg);
+}
+const fabricaEn = (x, y) => enEscena().find(o => CAT[o.k]?.fabrica && Math.abs(o.x - x) < CAT[o.k].w / 2 + 20 && y > o.y - CAT[o.k].h - 60 && y < o.y + 20);
+function meterInsumo(f, item) {
+  const fab = CAT[f.k].fabrica;
+  if (!fab.receta.includes(item.k)) { di('Eso no va aquí.', "That doesn't go here."); soltarEn(item, item.x + 80, item.y); return; }
+  f.dentro ||= [];
+  if (!f.dentro.includes(item.k)) f.dentro.push(item.k);
+  quitar(item); dibujarElem(f); colocar(f); tono(600, 0, 0.08, 'sine', 0.12);
+  if (!fab.receta.every(r => f.dentro.includes(r))) { const falta = fab.receta.find(r => !f.dentro.includes(r)); di(`Falta: ${CAT[falta].es.toLowerCase()}.`, `Still need: ${CAT[falta].en.toLowerCase()}.`); guardar(); return; }
+  f.on = true; dibujarElem(f); colocar(f);   // ¡a producir!
+  for (let k = 0; k < 8; k++) tono(200 + k * 40, k * 0.1, 0.1, 'triangle', 0.06);
+  setTimeout(() => {
+    const n = E.neg[fab.neg], p = PRODUCTOS[fab.neg];
+    f.dentro = []; f.on = false; dibujarElem(f); colocar(f);
+    n.stock += fab.hace; burbuja(f, p.emo); burbuja(f, '✨');
+    di(`¡Hiciste ${fab.hace}! Ahora a vender.`, `You made ${fab.hace}! Now let's sell.`);
+    redibujarNegocio(fab.neg);
+  }, 1800);
+}
+function abrirCerrar(letrero) {
+  const k = letrero.neg, n = E.neg[k];
+  n.abierto = !n.abierto; redibujarNegocio(k);
+  if (n.abierto) { [523, 659, 784].forEach((f, i) => tono(f, i * 0.1, 0.18, 'triangle', 0.12)); di(n.stock ? '¡Abierto! Ya vienen los clientes.' : '¡Abierto! Pero no tienes nada que vender. Haz algo primero.', n.stock ? 'Open! Customers are coming.' : 'Open! But you have nothing to sell. Make something first.'); return; }
+  // Cerrar el día: las cuentas y el premio del banco por ahorrar
+  const gan = n.ventas - n.costos;
+  di(`Cerraste. Hoy vendiste ${n.ventas} y gastaste ${n.costos}. ${gan > 0 ? `¡Ganaste ${gan}!` : gan === 0 ? 'Quedaste igual.' : `Perdiste ${-gan}. Mañana cobra un poquito más o gasta menos.`}`,
+     `Closed. Today you sold ${n.ventas} and spent ${n.costos}. ${gan > 0 ? `You made ${gan}!` : gan === 0 ? 'You broke even.' : `You lost ${-gan}. Tomorrow charge a bit more or spend less.`}`);
+  toast(`📒 ${T('Vendí', 'Sold')} ${n.ventas} − ${T('Gasté', 'Spent')} ${n.costos} = ${T('Gané', 'Profit')} ${gan}`);
+  if (gan > 0) for (const emo of ['🎉', '🪙']) burbuja(letrero, emo);
+  const premio = Math.floor((E.ahorro || 0) / 10);
+  if (premio) { E.ahorro += premio; setTimeout(() => toast(`🏦 ${T(`El banco te premió por ahorrar: +${premio}`, `The bank rewarded your savings: +${premio}`)}`), 3200); }
+  n.ventas = 0; n.costos = 0;
+  setTimeout(() => redibujarNegocio(k), 3000);
+}
+function explicarCuentas(k) {
+  const n = E.neg[k], gan = n.ventas - n.costos; sfx.pop();
+  di(`Vendiste ${n.ventas}, gastaste ${n.costos}. ${n.ventas} menos ${n.costos} es ${gan}: esa es tu ganancia.`, `You sold ${n.ventas} and spent ${n.costos}. ${n.ventas} minus ${n.costos} is ${gan}: that's your profit.`);
+}
+// Los clientes: llegan, miran el precio y deciden
+let avisoCliente = 0;
+setInterval(() => {
+  if (E.esc !== 'negocios' || document.hidden) return;
+  for (const k of NEGOCIOS) {
+    const n = E.neg[k];
+    if (!n.abierto || enEscena().some(o => o.cliente === k) || Math.random() > 0.35) continue;
+    llegaCliente(k);
+  }
+}, 1500);
+function llegaCliente(k) {
+  const s = negX(k), azarDe = a => a[azar(a.length)], cols = Object.values(ROPA_COL);
+  const c = { id: E.sigId++, k: 'per', esc: 'negocios', cliente: k, x: s + 40, y: PISO, pose: 'parado', mira: 1, tam: azar(3) ? 'adulto' : 'nino', piel: azarDe(PIELES),
+    pelo: azarDe(PEINADOS.slice(0, 8)), colorPelo: azarDe(COLORES_PELO.slice(0, 7)), ropa: azar(2) ? 'camisa' : 'vestido', color: azarDe(cols), pantalon: azarDe(cols) };
+  E.ents.push(c);
+  const el = crearElem(c); colocar(c);
+  el.style.transition = 'transform 2s linear';
+  requestAnimationFrame(() => { c.x = s + 640; colocar(c); });
+  setTimeout(() => decidir(c, el), 2100);
+}
+function decidir(c, el) {
+  if (!ent(c.id)) return;
+  const k = c.cliente, n = E.neg[k], p = PRODUCTOS[k], maximo = p.valor + azar(2);
+  burbuja(c, p.emo);
+  const hablar = (es, en) => { if (Date.now() > avisoCliente) { avisoCliente = Date.now() + 5000; di(es, en); } };
+  setTimeout(() => {
+    if (!ent(c.id)) return;
+    if (!n.stock) { burbuja(c, '😕'); hablar(`¡No hay ${p.es}!`, `No ${p.en} left!`); }
+    else if (n.precio > maximo) { burbuja(c, '😕'); hablar(`¡Está muy caro! Cuesta ${n.precio}.`, `Too expensive! It costs ${n.precio}.`); }
+    else {
+      n.stock--; n.ventas += n.precio; E.monedas += n.precio; moneditas(n.precio);
+      burbuja(c, n.precio < p.valor ? '🤩' : '😊');
+      if (n.precio < p.valor) hablar('¡Qué barato! Pudiste cobrar más.', 'So cheap! You could charge more.');
+      redibujarNegocio(k);
+    }
+    setTimeout(() => {   // se va
+      if (!ent(c.id)) return;
+      c.x = negX(k) + 980; colocar(c);
+      setTimeout(() => quitar(c), 2000);
+    }, 900);
+  }, 700);
+}
+// ---------- Banco: ahorrar para una meta ----------
+function ahorrar(alc) {
+  if (!E.monedas) { sfx.pop(); di('No tienes monedas. ¡Gana dinero en los negocios!', 'You have no coins. Earn money at the shops!'); return; }
+  E.monedas--; E.ahorro++; moneditas(1);
+  dibujarElem(alc); colocar(alc); burbuja(alc, '🪙');
+  for (const o of enEscena()) if (o.k === 'meta_tablero') { dibujarElem(o); colocar(o); }
+  decir([{ l: E.idioma === 'en' ? 'en' : 'es', t: String(E.ahorro) }]);
+  pintarMonedas(); guardar();
+}
+function sacarDinero() {
+  if (!E.ahorro) { sfx.pop(); di('Tu alcancía está vacía.', 'Your piggy bank is empty.'); return; }
+  E.ahorro--; E.monedas++; moneditas(1);
+  for (const o of enEscena()) if (o.k === 'alcancia' || o.k === 'meta_tablero') { dibujarElem(o); colocar(o); }
+  di(`Sacaste 1. En la alcancía quedan ${E.ahorro}.`, `You took out 1. ${E.ahorro} left in the piggy bank.`); pintarMonedas(); guardar();
+}
+function tocarMeta(t) {
+  const m = METAS[E.meta || 0], falta = m[3] - E.ahorro;
+  if (falta > 0) {
+    E.meta = ((E.meta || 0) + 1) % METAS.length;   // tocar cambia de meta mientras no se logra
+    const nm = METAS[E.meta]; dibujarElem(t); colocar(t); sfx.pop();
+    di(`Meta: ${nm[1]}. Cuesta ${nm[3]}. Tienes ${E.ahorro}. ${E.ahorro >= nm[3] ? '¡Ya te alcanza! Tócala otra vez.' : `Te faltan ${nm[3] - E.ahorro}.`}`,
+       `Goal: ${nm[2]}. It costs ${nm[3]}. You have ${E.ahorro}. ${E.ahorro >= nm[3] ? 'You have enough! Tap again.' : `You need ${nm[3] - E.ahorro} more.`}`);
+    guardar(); return;
+  }
+  E.ahorro -= m[3]; E.metas.push(m[0]);   // ¡meta lograda!
+  const pr = { id: E.sigId++, k: 'premio_meta', emo: m[0], esc: E.esc, x: t.x - 200, y: t.y - 60 }; E.ents.push(pr); crearElem(pr); soltarEn(pr, pr.x, pr.y);
+  for (const emo of ['🎉', '🎊', '⭐']) burbuja(t, emo);
+  [523, 659, 784, 1047, 1319, 1568].forEach((f, i) => tono(f, i * 0.09, 0.25, 'triangle', 0.13));
+  di(`¡Lo lograste! Ahorraste ${m[3]} y compraste ${m[1]}.`, `You did it! You saved ${m[3]} and bought ${m[2]}.`);
+  for (const o of enEscena()) if (o.k === 'alcancia' || o.k === 'meta_tablero') { dibujarElem(o); colocar(o); }
+  guardar();
+}
 // ---------- Avión: viajar a otros países (y un sello en el pasaporte) ----------
 const avionEn = (x, y) => enEscena().find(o => o.k === 'avion' && Math.abs(o.x - x) < 300 && y > o.y - 200 && y < o.y + 10);
 const avionAqui = () => enEscena().find(o => o.k === 'avion');
@@ -2342,6 +2582,7 @@ function finToque() {
   if (en.k !== 'per' && ultimoEnBasura) { borrar(en); return; }
   if (en.k === 'per') { const b = busEn(mx, my); if (b) { abordar(en, b); return; } }
   if (en.k === 'per') { const av = avionEn(mx, my); if (av) { abordarAvion(en, av); return; } }
+  if (CAT[en.k]?.insumo) { const f = fabricaEn(mx, my); if (f) { meterInsumo(f, en); return; } }
   if (SIEMBRA.includes(en.k) || CAT[en.k]?.riega) { const s = surcoEn(mx, my); if (s && (CAT[en.k].riega ? s.planta && s.fase < 3 : !s.planta)) { CAT[en.k].riega ? regar(s, en) : sembrar(s, en); return; } }
   if (CAT[en.k]?.arena) { const ca = castilloEn(mx, my); if (ca) { construirCastillo(ca, en); return; } }
   if (ING_PIZZA.includes(en.k)) { const pz = pizzaEn(mx, my); if (pz) { ponerEnPizza(pz, en); return; } }
