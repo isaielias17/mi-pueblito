@@ -108,6 +108,11 @@
   .flotando > svg { animation: nada 2.2s ease-in-out infinite alternate; }
   .pez .emo { animation: nadarPez 3.5s ease-in-out infinite alternate; }
   @keyframes nadarPez { from { transform: translateX(-40px); } to { transform: translateX(40px) translateY(-8px); } }
+  .flores-suelo { position: absolute; left: 0; right: 0; top: 724px; font-size: 34px; letter-spacing: 26px; white-space: nowrap; overflow: hidden; font-family: "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif; }
+  .suelo-otono { position: absolute; left: 0; right: 0; top: 560px; bottom: 0; background: linear-gradient(transparent, #eab30866 16%, #d9770680); }
+  .estacion-verano { background: radial-gradient(circle at 85% 12%, #fde04755, transparent 40%); }
+  [data-estacion="invierno"] .arbolEnt.palmeraEnt svg { filter: brightness(1.1) saturate(.8); }
+  .filaPanel button small { display: block; }
   .climaCapa { position: absolute; top: 0; height: 900px; pointer-events: none; z-index: 19; overflow: hidden; }
   .clima-lluvia { background: repeating-linear-gradient(100deg, transparent 0 22px, #ffffff88 22px 24px, transparent 24px 46px), #47556966; background-size: 46px 120px; animation: llueve .35s linear infinite; }
   @keyframes llueve { to { background-position: -10px 120px; } }
@@ -209,6 +214,7 @@
   <button class="cerrarPanel" id="estCerrar">✖️</button>
 </div>
 <div id="cielo" class="panelAbajo">
+  <div class="filaPanel" id="estacionesLista"></div>
   <div class="filaPanel" id="cieloLista"></div>
   <button class="cerrarPanel" id="cieloCerrar">✖️</button>
 </div>
@@ -485,7 +491,11 @@ const CAT = {
   banca: { t: 'mueble', w: 230, h: 120, es: 'Banca', en: 'Bench', asientos: [{ dx: -50, dy: 0, pose: 'sentado' }, { dx: 55, dy: 0, pose: 'sentado' }],
     svg: () => svg(230, 120, `<rect x="0" y="0" width="230" height="16" rx="6" fill="#16a34a"/><rect x="0" y="22" width="230" height="16" rx="6" fill="#16a34a"/><rect x="0" y="62" width="230" height="16" rx="6" fill="#15803d"/><path d="M24 0 V120 M206 0 V120" stroke="#1f2937" stroke-width="8"/>`) },
   arbol: { t: 'mueble', w: 260, h: 430, es: 'Árbol', en: 'Tree', fijo: true,
-    svg: () => svg(260, 430, `<rect x="112" y="220" width="40" height="210" rx="10" fill="#92400e"/><circle cx="130" cy="130" r="110" fill="#22c55e"/><circle cx="70" cy="180" r="70" fill="#16a34a"/><circle cx="195" cy="175" r="72" fill="#16a34a"/><circle cx="95" cy="95" r="18" fill="#ef4444"/><circle cx="170" cy="120" r="18" fill="#ef4444"/><circle cx="130" cy="190" r="18" fill="#ef4444"/>`) },
+    svg: () => { const est = E.estacion || 'verano', tronco = `<rect x="112" y="220" width="40" height="210" rx="10" fill="#92400e"/>`;   // cambia con la estación
+      if (est === 'invierno') return svg(260, 430, tronco + `<path d="M132 230 L80 120 M80 120 L50 90 M80 120 L90 70 M132 230 L190 110 M190 110 L220 80 M190 110 L180 60 M132 230 L132 60" stroke="#92400e" stroke-width="14" stroke-linecap="round" fill="none"/>${[[50, 86], [90, 66], [132, 56], [180, 56], [220, 76]].map(([x, y]) => `<ellipse cx="${x}" cy="${y}" rx="18" ry="8" fill="#f8fafc"/>`).join('')}`);
+      const [c1, c2] = est === 'otono' ? ['#f59e0b', '#ea580c'] : est === 'primavera' ? ['#4ade80', '#22c55e'] : ['#22c55e', '#16a34a'];
+      const extra = est === 'otono' ? '' : [[95, 95], [170, 120], [130, 190], [60, 170], [200, 160]].slice(0, est === 'primavera' ? 5 : 3).map(([x, y]) => est === 'primavera' ? `<circle cx="${x}" cy="${y}" r="13" fill="#f9a8d4"/><circle cx="${x}" cy="${y}" r="5" fill="#fde047"/>` : `<circle cx="${x}" cy="${y}" r="18" fill="#ef4444"/>`).join('');
+      return svg(260, 430, tronco + `<circle cx="130" cy="130" r="110" fill="${c1}"/><circle cx="70" cy="180" r="70" fill="${c2}"/><circle cx="195" cy="175" r="72" fill="${c2}"/>${extra}`); } },
   casita_perro: { t: 'mueble', w: 170, h: 150, es: 'Casita del perro', en: 'Doghouse',
     svg: () => svg(170, 150, `<path d="M0 64 L85 0 L170 64 Z" fill="#b91c1c"/><rect x="14" y="60" width="142" height="90" fill="#fbbf24"/><path d="M60 150 V108 Q85 80 110 108 V150 Z" fill="#78350f"/>`) },
   // Iglesia
@@ -587,7 +597,8 @@ const CAT = {
   paca: { t: 'mueble', w: 140, h: 90, es: 'Paca de paja', en: 'Hay bale', sup: 90,
     svg: () => svg(140, 90, `<rect x="0" y="0" width="140" height="90" rx="12" fill="#facc15"/><path d="M10 20 H130 M10 45 H130 M10 70 H130" stroke="#ca8a04" stroke-width="4"/><path d="M40 0 V90 M100 0 V90" stroke="#a16207" stroke-width="6"/>`) },
   arbusto: { t: 'mueble', w: 170, h: 120, es: 'Arbusto', en: 'Bush',
-    svg: () => svg(170, 120, `<circle cx="50" cy="70" r="48" fill="#16a34a"/><circle cx="110" cy="60" r="56" fill="#22c55e"/><circle cx="140" cy="84" r="34" fill="#16a34a"/><circle cx="70" cy="40" r="8" fill="#f472b6"/><circle cx="124" cy="36" r="8" fill="#facc15"/>`) },
+    svg: () => { const est = E.estacion || 'verano', [a, b] = est === 'otono' ? ['#ea580c', '#f59e0b'] : est === 'invierno' ? ['#cbd5e1', '#f8fafc'] : ['#16a34a', '#22c55e'];
+      return svg(170, 120, `<circle cx="50" cy="70" r="48" fill="${a}"/><circle cx="110" cy="60" r="56" fill="${b}"/><circle cx="140" cy="84" r="34" fill="${a}"/>${est === 'primavera' || est === 'verano' ? '<circle cx="70" cy="40" r="8" fill="#f472b6"/><circle cx="124" cy="36" r="8" fill="#facc15"/>' : ''}`); } },
   surco: { t: 'mueble', w: 130, h: 70, es: 'Huerto', en: 'Garden bed', fijo: true, pegado: true,
     svg: e => { const f = e.fase || 0, c = e.planta ? CAT[e.planta].emo : '';
       return svg(130, 70, `<ellipse cx="65" cy="58" rx="64" ry="14" fill="#78350f"/><path d="M10 56 Q65 34 120 56" fill="#92400e"/>${f === 1 ? '<text x="65" y="52" font-size="30" text-anchor="middle">🌱</text>' : f === 2 ? '<text x="65" y="52" font-size="40" text-anchor="middle">🌿</text>' : f === 3 ? `<text x="40" y="50" font-size="34" text-anchor="middle">${c}</text><text x="90" y="46" font-size="34" text-anchor="middle">${c}</text><text x="65" y="30" font-size="30" text-anchor="middle">✨</text>` : ''}`); } },
@@ -868,8 +879,8 @@ function bomberosInicial(id) {
   return { ents, sigId: id };
 }
 // Escuela (salón de clases + patio) y doctor (afuera + sala de espera + consultorio)
-ESCENAS.escuela = { w: 2200, nombre: ['La escuela', 'The school'] };
-ESCENAS.doctor = { w: 2300, nombre: ['El doctor', 'The doctor'], superficies: [{ x0: 1330, x1: 1510, y: 640 }] };
+ESCENAS.escuela = { w: 2200, nombre: ['La escuela', 'The school'], exterior: [[1500, 2200]] };
+ESCENAS.doctor = { w: 2300, nombre: ['El doctor', 'The doctor'], exterior: [[0, 450]], superficies: [{ x0: 1330, x1: 1510, y: 640 }] };
 function escuelaInicial(id) {
   const ents = [], m = (k, x, y = PISO, extra = {}) => { const e = { id: id++, k, esc: 'escuela', x, y, ...extra }; ents.push(e); return e; };
   m('pizarron', 770, 500, { letra: 0 }); m('mesa', 290); m('globo_tierra', 220, PISO - 120); m('abaco', 350, PISO - 120);
@@ -895,7 +906,7 @@ function doctorInicial(id) {
 }
 // Parque (izquierda) e iglesia (derecha); la tarima del coro es una superficie
 const CORO = { x0: 2080, x1: 2390, y: 690 };
-ESCENAS.iglesia = { w: 2400, nombre: ['El parque y la iglesia', 'The park & church'], superficies: [CORO] };
+ESCENAS.iglesia = { w: 2400, nombre: ['El parque y la iglesia', 'The park & church'], superficies: [CORO], exterior: [[0, 1180]] };
 function iglesiaInicial(id) {
   const ents = [], m = (k, x, y = PISO, extra = {}) => { const e = { id: id++, k, esc: 'iglesia', x, y, ...extra }; ents.push(e); return e; };
   m('arbol', 120); m('casita_perro', 300); m('columpio', 520); m('resbaladilla', 820); const banca = m('banca', 1060);
@@ -985,6 +996,8 @@ function migrar() {
   E.secretos ||= [];
   E.bus ||= { pasajeros: [] };
   E.avion ||= { pasajeros: [] }; E.sellos ||= [];
+  if (['nieve', 'otono', 'primavera'].includes(E.clima)) { E.estacion = { nieve: 'invierno', otono: 'otono', primavera: 'primavera' }[E.clima]; E.clima = 'sol'; }   // antes eran climas
+  E.estacion ||= 'verano';
   for (const s of SECRETOS) if (!E.secretos.includes(s.sid) && !E.ents.some(e => e.sid === s.sid)) E.ents.push({ id: E.sigId++, k: 'secreto', esc: s.esc, x: s.x, y: s.y, sid: s.sid, emo: s.emo });
   if (!E.ents.some(e => e.k === 'olla')) {
     const estufa = E.ents.find(e => e.k === 'estufa' && e.esc === 'casa'), mesa = E.ents.find(e => e.k === 'mesa' && e.esc === 'casa');
@@ -1289,6 +1302,7 @@ function dibujarElem(e, el = elems.get(e.id)) {
     el.classList.toggle('sirena-on', ['ambulancia', 'camion_bomberos', 'patrulla'].includes(e.k) && !!e.on);
     if (e.k === 'fuego') Object.assign(el.firstChild.style, { transform: `scale(${0.45 + 0.18 * (e.vida ?? 3)})`, transformOrigin: '50% 100%', animation: 'flama .4s infinite alternate' });
     el.classList.toggle('secreto', !!c.secreto);
+    el.classList.toggle('arbolEnt', ['arbol', 'arbusto', 'palmera'].includes(e.k));
     el.style.pointerEvents = e.k === 'rayos_x' ? 'none' : '';   // va delante del personaje: el dedo lo atraviesa para tomarlo
     el.classList.toggle('tele-on', e.k === 'tele' && !!e.on);
     el.classList.toggle('estufa-on', e.k === 'estufa' && !!e.on);
@@ -1804,34 +1818,50 @@ setInterval(() => {   // burbujas de quien bucea
 }, 1800);
 
 // ---------- Clima y estaciones ----------
-const CLIMAS = {
-  sol: { ico: '☀️', es: '¡Hace sol!', en: "It's sunny!" }, lluvia: { ico: '🌧️', es: 'Está lloviendo. La lluvia riega las plantas.', en: "It's raining. Rain waters the plants." },
-  arcoiris: { ico: '🌈', es: '¡Salió el arcoíris!', en: 'A rainbow came out!' }, nieve: { ico: '❄️', es: '¡Está nevando! Hay un muñeco de nieve.', en: "It's snowing! There's a snowman." },
-  otono: { ico: '🍂', es: 'Es otoño: las hojas caen.', en: "It's fall: the leaves are falling." }, primavera: { ico: '🌸', es: 'Es primavera: hay flores.', en: "It's spring: there are flowers." },
+// Las 4 estaciones (cambian cómo se ve todo afuera) y el clima encima (sol, lluvia o arcoíris)
+const ESTACIONES = {
+  primavera: { ico: '🌸', es: 'Primavera: salen las flores y los pájaros cantan.', en: 'Spring: flowers bloom and birds sing.' },
+  verano: { ico: '☀️', es: 'Verano: hace calor. ¡Vamos a la playa!', en: "Summer: it's hot. Let's go to the beach!" },
+  otono: { ico: '🍂', es: 'Otoño: las hojas cambian de color y caen.', en: 'Fall: the leaves change color and fall.' },
+  invierno: { ico: '❄️', es: 'Invierno: hace frío y cae nieve.', en: "Winter: it's cold and it snows." },
 };
+const CLIMAS = {
+  sol: { ico: '🌤️', es: '¡Hace buen tiempo!', en: 'Nice weather!' }, lluvia: { ico: '🌧️', es: 'Está lloviendo. La lluvia riega las plantas.', en: "It's raining. Rain waters the plants." },
+  arcoiris: { ico: '🌈', es: '¡Salió el arcoíris!', en: 'A rainbow came out!' },
+};
+const caer = (emojis, n, lento = 0) => Array.from({ length: n }, () => `<span class="hoja" style="left:${azar(100)}%;animation-delay:-${(Math.random() * 8).toFixed(1)}s;animation-duration:${(5 + lento + Math.random() * 4).toFixed(1)}s">${emojis[azar(emojis.length)]}</span>`).join('');
+function icoCielo() { return E.noche ? '🌙' : (E.clima && E.clima !== 'sol' ? CLIMAS[E.clima].ico : ESTACIONES[E.estacion || 'verano'].ico); }
 function aplicarClima() {
   lienzo.querySelectorAll('.climaCapa').forEach(c => c.remove());
-  const cl = E.clima || 'sol';
-  lienzo.querySelectorAll('.ventana .astro').forEach(a => a.textContent = E.noche ? '🌙' : (cl === 'sol' ? '☀️' : CLIMAS[cl].ico));
-  if (cl === 'sol') return;
+  const cl = E.clima || 'sol', est = E.estacion || 'verano';
+  lienzo.dataset.estacion = est;   // los árboles cambian de color (CSS)
+  lienzo.querySelectorAll('.ventana .astro').forEach(a => a.textContent = icoCielo());
   const rangos = E.esc === 'mapa' ? [[0, ESCENAS.mapa.w]] : ESCENAS[E.esc].exterior || [];
   for (const [x0, x1] of rangos) {
-    const d = document.createElement('div'); d.className = 'climaCapa clima-' + cl;
-    Object.assign(d.style, { left: x0 + 'px', width: (x1 - x0) + 'px' });
-    if (cl === 'otono' || cl === 'primavera')
-      for (let k = 0; k < Math.ceil((x1 - x0) / 140); k++) d.insertAdjacentHTML('beforeend', `<span class="hoja" style="left:${azar(100)}%;animation-delay:-${(Math.random() * 6).toFixed(1)}s;animation-duration:${(5 + Math.random() * 4).toFixed(1)}s">${cl === 'otono' ? ['🍂', '🍁'][azar(2)] : '🌸'}</span>`);
-    if (cl === 'arcoiris') d.innerHTML = svg(x1 - x0, 900, [['#ef4444', 0], ['#f97316', 22], ['#facc15', 44], ['#22c55e', 66], ['#3b82f6', 88], ['#a855f7', 110]].map(([c, r]) => `<path d="M${(x1 - x0) / 2 - 520 + r} 700 A${520 - r} ${520 - r} 0 0 1 ${(x1 - x0) / 2 + 520 - r} 700" stroke="${c}" stroke-width="22" fill="none" opacity=".7"/>`).join(''));
-    if (cl === 'nieve') d.insertAdjacentHTML('beforeend', '<div class="suelo-nieve"></div>');
-    if (cl === 'lluvia') d.insertAdjacentHTML('beforeend', [0.2, 0.55, 0.8].map(p => `<div class="charco" style="left:${p * 100}%"></div>`).join(''));
-    lienzo.appendChild(d);
+    const w = x1 - x0, n = Math.ceil(w / 140);
+    const capa = (clase, html = '') => { const d = document.createElement('div'); d.className = 'climaCapa ' + clase; Object.assign(d.style, { left: x0 + 'px', width: w + 'px' }); d.innerHTML = html; lienzo.appendChild(d); };
+    // la estación
+    if (est === 'primavera') capa('estacion-primavera', caer(['🌸', '🌸', '🌼'], Math.ceil(n * 0.6), 2) + `<div class="flores-suelo">${'🌷🌼🌸🌻'.repeat(Math.ceil(w / 240))}</div>`);
+    if (est === 'verano') capa('estacion-verano', caer(['🦋'], Math.max(2, Math.ceil(n * 0.25)), 4));
+    if (est === 'otono') capa('estacion-otono', caer(['🍂', '🍁', '🍂'], n) + '<div class="suelo-otono"></div>');
+    if (est === 'invierno') capa('clima-nieve', '<div class="suelo-nieve"></div>');
+    // el clima encima
+    if (cl === 'lluvia') capa('clima-lluvia', [0.2, 0.55, 0.8].map(p => `<div class="charco" style="left:${p * 100}%"></div>`).join(''));
+    if (cl === 'arcoiris') capa('clima-arcoiris', svg(w, 900, [['#ef4444', 0], ['#f97316', 22], ['#facc15', 44], ['#22c55e', 66], ['#3b82f6', 88], ['#a855f7', 110]].map(([c, r]) => `<path d="M${w / 2 - 520 + r} 700 A${520 - r} ${520 - r} 0 0 1 ${w / 2 + 520 - r} 700" stroke="${c}" stroke-width="22" fill="none" opacity=".7"/>`).join('')));
   }
-  if (cl === 'nieve' && rangos.length && !enEscena().some(o => o.k === 'muneco_nieve')) {   // aparece un muñeco de nieve afuera
+  if (est === 'invierno' && rangos.length && E.esc !== 'mapa' && !enEscena().some(o => o.k === 'muneco_nieve')) {   // en invierno hay un muñeco de nieve afuera
     const [x0, x1] = rangos[0], n = { id: E.sigId++, k: 'muneco_nieve', esc: E.esc, x: x0 + (x1 - x0) * 0.62, y: PISO };
-    if (E.esc !== 'mapa') { E.ents.push(n); crearElem(n); colocar(n); }
+    E.ents.push(n); crearElem(n); colocar(n);
   }
 }
+function cambiarEstacion(est) {
+  if (est !== 'invierno') for (const o of E.ents.filter(o => o.k === 'muneco_nieve')) { if (o.esc === E.esc) burbuja(o, '💧'); quitar(o); }   // se derrite
+  E.estacion = est; guardar(); aplicarClima(); pintarNoche();
+  for (const o of enEscena()) if (o.k === 'arbol' || o.k === 'arbusto') { dibujarElem(o); colocar(o); }   // los árboles cambian de hojas
+  [523, 659, 784].forEach((f, i) => tono(f * ({ primavera: 1, verano: 1.12, otono: 0.9, invierno: 0.8 })[est], i * 0.12, 0.25, 'triangle', 0.1));
+  di(ESTACIONES[est].es, ESTACIONES[est].en);
+}
 function cambiarClima(cl) {
-  if (cl !== 'nieve') for (const o of E.ents.filter(o => o.k === 'muneco_nieve')) { if (o.esc === E.esc) burbuja(o, '💧'); quitar(o); }   // se derrite
   E.clima = cl; guardar(); aplicarClima(); pintarNoche();
   if (cl === 'lluvia') for (let k = 0; k < 30; k++) tono(2000 + Math.random() * 2500, k * 0.05, 0.03, 'sine', 0.03);
   di(CLIMAS[cl].es, CLIMAS[cl].en);
@@ -2429,20 +2459,25 @@ function pintar(objetivo) {
 
 // ---------- Día y noche ----------
 function pintarNoche() {
-  $('bNoche').textContent = E.noche ? '🌙' : (E.clima && E.clima !== 'sol' ? CLIMAS[E.clima].ico : '⛅');
+  $('bNoche').textContent = icoCielo();
   lienzo.classList.toggle('noche', E.noche);
-  lienzo.querySelectorAll('.ventana .astro').forEach(a => a.textContent = E.noche ? '🌙' : (E.clima && E.clima !== 'sol' ? CLIMAS[E.clima].ico : '☀️'));
+  lienzo.querySelectorAll('.ventana .astro').forEach(a => a.textContent = icoCielo());
 }
-// El botón del cielo abre: día, noche y los climas
+// El botón del cielo abre: las 4 estaciones (en orden), y abajo día/noche, clima y fiestas
 $('bNoche').onclick = () => {
   audio(); const abrir = !$('cielo').classList.contains('abierto'); cerrarCajones();
   if (!abrir) return;
-  const f = $('cieloLista'); f.innerHTML = '';
-  const op = (ico, fn) => { const b = document.createElement('button'); b.innerHTML = `<span style="font-size:34px">${ico}</span>`; b.onclick = () => { audio(); fn(); $('cielo').classList.remove('abierto'); }; f.appendChild(b); };
-  op('☀️', () => { if (E.noche) cambiarNoche(); if ((E.clima || 'sol') !== 'sol') cambiarClima('sol'); else di(CLIMAS.sol.es, CLIMAS.sol.en); });
-  op('🌙', () => { if (!E.noche) cambiarNoche(); });
-  for (const k of ['lluvia', 'arcoiris', 'nieve', 'otono', 'primavera']) op(CLIMAS[k].ico, () => cambiarClima(k));
-  for (const k of ['cumple', 'navidad']) op(FIESTAS[k].ico, () => cambiarFiesta(E.fiesta === k ? '' : k));
+  const fe = $('estacionesLista'), f = $('cieloLista'); fe.innerHTML = ''; f.innerHTML = '';
+  const op = (fila, ico, fn, sel, texto) => {
+    const b = document.createElement('button'); b.className = sel ? 'sel' : '';
+    b.innerHTML = `<span style="font-size:${texto ? 26 : 34}px;line-height:1">${ico}</span>${texto ? `<small style="font-size:10px;font-weight:800">${texto}</small>` : ''}`;
+    b.onclick = () => { audio(); fn(); $('cielo').classList.remove('abierto'); }; fila.appendChild(b);
+  };
+  for (const [k, s] of Object.entries(ESTACIONES)) op(fe, s.ico, () => cambiarEstacion(k), (E.estacion || 'verano') === k, { primavera: T('Primavera', 'Spring'), verano: T('Verano', 'Summer'), otono: T('Otoño', 'Fall'), invierno: T('Invierno', 'Winter') }[k].split(' · ')[0]);
+  op(f, '☀️', () => { if (E.noche) cambiarNoche(); else di('Es de día.', "It's daytime."); }, !E.noche);
+  op(f, '🌙', () => { if (!E.noche) cambiarNoche(); }, E.noche);
+  for (const k of Object.keys(CLIMAS)) op(f, CLIMAS[k].ico, () => cambiarClima(k), (E.clima || 'sol') === k);
+  for (const k of ['cumple', 'navidad']) op(f, FIESTAS[k].ico, () => cambiarFiesta(E.fiesta === k ? '' : k), E.fiesta === k);
   $('cielo').classList.add('abierto'); sfx.pop();
 };
 function cambiarNoche() {
